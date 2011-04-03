@@ -1,0 +1,3 @@
+[submodule "build/smoosh"]
+	path = build/smoosh
+	url = git://github.com/fat/smoosh.git

@@ -1,3 +1,9 @@
+/*!
+  * Boom. Ajax! Ever heard of it!?
+  * copyright 2011 @dedfat
+  * https://github.com/ded/reqwest
+  * license MIT
+  */
 !function (context) {
   var twoHundo = /^20\d$/,
       xhr = ('XMLHttpRequest' in window) ?
