@@ -12,7 +12,7 @@ require('smoosh').config({
     "curly": true,
     "debug": false,
     "devel": false,
-    "evil": false,
+    "evil": true,
     "regexp": false,
     "undef": false,
     "sub": false,
