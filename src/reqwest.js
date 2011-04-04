@@ -30,12 +30,19 @@
   }
 
   // would be cool if there was some fancy class system out there...
-  function _reqwest(o, fn) {
-    this.request = getRequest(o, fn);
+  function Reqwest(o, fn) {
+    var type = o.type || 'js';
+    function success(resp) {
+      var r = resp.responseText,
+          val = /json$/i.test(type) ? JSON.parse(r) : r;
+      /^js$/i.test(type) && eval(r);
+      fn && typeof fn == 'function' ? fn(o) : o.success(val);
+    }
+    this.request = getRequest(o, success);
     this.retries = o.retries || 0;
   }
 
-  _reqwest.prototype = {
+  Reqwest.prototype = {
     abort: function () {
       this.request.abort();
     },
@@ -45,8 +52,8 @@
     }
   };
 
-  function request(o, fn) {
-    return new _reqwest(o, fn);
+  function reqwest(o, fn) {
+    return new Reqwest(o, fn);
   }
 
   var oldJax = context.reqwest;

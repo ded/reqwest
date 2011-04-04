@@ -21,4 +21,4 @@ require('smoosh').config({
     "whitespace": true,
     "asi": false
   }
-}).run().build().analyze()
+}).run().build().analyze();
