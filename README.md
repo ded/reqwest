@@ -43,4 +43,4 @@ Browser support
 
 Build
 -----
-[Node.js](https://github.com/joyent/node/) is required run tests and build + minify the Reqwest code
+[Node.js](https://github.com/joyent/node/) is required to run tests and build + minify the Reqwest code.
