@@ -1,6 +1,7 @@
+[*visitors*]: we are not currently taking support requests until we finalize a basic design
 Reqwest
 -------
-It's HTML5 compliant.
+It's HTML5 compliant ;)
 
 The happs
 ---------
