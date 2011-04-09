@@ -1,0 +1,13 @@
+{
+  "name": "reqwest",
+  "description": "A robust lightweight wrapper for asynchronous http requests",
+  "version": "0.0.1",
+  "homepage": "https://github.com/polvero/reqwest",
+  "authors": ["Dustin Diaz", "Jacob Thornton"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/polvero/reqwest.git"
+  },
+  "main": "./reqwest.js",
+  "ender": "./src/ender.js"
+}
