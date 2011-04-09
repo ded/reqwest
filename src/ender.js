@@ -1,3 +1,3 @@
-$.augment({
+$.ender({
   ajax: reqwest.noConflict()
 });
