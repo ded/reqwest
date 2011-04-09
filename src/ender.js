@@ -1,1 +1,3 @@
-$.augment(reqwest);
+$.augment({
+  ajax: reqwest.noConflict()
+});
