@@ -29,5 +29,16 @@ sink('Reqwest', function(test, ok, before, after) {
     });
   });
 
+  test('no callbacks', 1, function () {
+    var pass = true;
+    try {
+      reqwest('/tests/fixtures/fixtures.js');
+    } catch (ex) {
+      pass = false;
+    } finally {
+      ok(pass, 'successfully doesnt fail without callback');
+    }
+  });
+
 });
 start();

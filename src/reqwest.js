@@ -32,11 +32,13 @@
   // would be cool if there was some fancy class system out there...
   function Reqwest(o, fn) {
     var type = o.type || 'js';
+    fn = fn || function () {};
     function success(resp) {
       var r = resp.responseText,
           val = /json$/i.test(type) ? JSON.parse(r) : r;
       /^js$/i.test(type) && eval(r);
-      fn && typeof fn == 'function' ? fn(o) : o.success(val);
+      fn(o);
+      o.success && typeof o.success == 'function' && o.success(val);
     }
     this.request = getRequest(o, success);
     this.retries = o.retries || 0;
