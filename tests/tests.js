@@ -40,5 +40,14 @@ sink('Reqwest', function(test, ok, before, after) {
     }
   });
 
+  test('complete is called', 1, function () {
+    reqwest({
+      url: '/tests/fixtures/fixtures.js',
+      complete: function () {
+        ok(true, 'called complete');
+      }
+    });
+  });
+
 });
 start();

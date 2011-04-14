@@ -8,40 +8,47 @@
           return new ActiveXObject('Microsoft.XMLHTTP');
         };
 
-  function readyState(o, fn) {
+  function readyState(o, success, error) {
     return function () {
       if (o && o.readyState == 4) {
         if (twoHundo.test(o.status)) {
-          fn && typeof fn == 'function' ? fn(o) : fn.success(o);
+          success(o);
         } else {
-          fn && fn.error && fn.error(o);
+          error(o);
         }
-        fn && fn.complete && fn.complete(o);
       }
     };
   }
 
-  function getRequest(o, fn) {
+  function getRequest(o, fn, err) {
     var http = xhr();
     http.open(o.method || 'GET', typeof o == 'string' ? o : o.url, true);
-    http.onreadystatechange = readyState(http, fn || o);
+    http.onreadystatechange = readyState(http, fn, err);
     http.send(o.data || null);
     return http;
   }
 
-  // would be cool if there was some fancy class system out there...
   function Reqwest(o, fn) {
     var type = o.type || 'js';
     fn = fn || function () {};
+
+    function complete(resp) {
+      o.complete && o.complete(resp);
+    }
+
     function success(resp) {
       var r = resp.responseText,
           val = /json$/i.test(type) ? JSON.parse(r) : r;
       /^js$/i.test(type) && eval(r);
       fn(o);
-      o.success && typeof o.success == 'function' && o.success(val);
+      o.success && o.success(val);
+      complete(val);
     }
-    this.request = getRequest(o, success);
-    this.retries = o.retries || 0;
+    function error(resp) {
+      o.error && o.error(resp);
+      complete(resp);
+    }
+    this.request = getRequest(o, success, error);
   }
 
   Reqwest.prototype = {
@@ -58,9 +65,9 @@
     return new Reqwest(o, fn);
   }
 
-  var oldJax = context.reqwest;
+  var old = context.reqwest;
   reqwest.noConflict = function () {
-    context.reqwest = oldJax;
+    context.reqwest = old;
     return this;
   };
   context.reqwest = reqwest;
