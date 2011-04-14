@@ -1,4 +1,5 @@
 var http = require('http'),
+    exec = require('child_process').exec,
     fs = require('fs'),
     Connect = require('../build/connect/'),
     dispatch = require('../build/dispatch/'),
@@ -18,5 +19,8 @@ var routes = {
   }
 };
 
-Connect.createServer(dispatch(routes)).listen(3000, '127.0.0.1');
-console.log('run your tests at http://localhost:3000');
+Connect.createServer(dispatch(routes)).listen(1234, '127.0.0.1');
+
+exec('open http://localhost:1234', function () {
+  console.log('opening tests at http://localhost:1234');
+});
