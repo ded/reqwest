@@ -26,23 +26,73 @@
     };
   }
 
+  function clone(o) {
+    var r = {};
+    for (var k in o) {
+      r[k] = o[k];
+    }
+    return r;
+  }
+
+  function setHeaders(http, options) {
+    var headers = options.headers;
+    if (headers && options.data) {
+      for (var h in headers) {
+        http.setRequestHeader(h, headers[h], false);
+      }
+    }
+  }
+
   function getRequest(o, fn, err) {
     var http = xhr();
     http.open(o.method || 'GET', typeof o == 'string' ? o : o.url, true);
+    setHeaders(http, o);
     http.onreadystatechange = readyState(http, fn, err);
     http.send(o.data || null);
     return http;
   }
 
   function Reqwest(o, fn) {
-    var type = o.type || 'js';
+    this.o = o;
+    this.fn = fn;
+    init.apply(this, arguments);
+  }
+
+  function setType(url) {
+    if (/\.json$/.test(url)) {
+      return 'json';
+    }
+    if (/\.js$/.test(url)) {
+      return 'js';
+    }
+    if (/\.html?$/.test(url)) {
+      return 'html';
+    }
+    if (/\.xml$/.test(url)) {
+      return 'xml';
+    }
+    return 'js';
+  }
+
+  function init(o, fn) {
+    this.url = typeof o == 'string' ? o : o.url;
+    this.timeout = null;
+    var type = o.type || setType(this.url), self = this;
     fn = fn || function () {};
+
+    if (o.timeout) {
+      this.timeout = setTimeout(function () {
+        self.abort();
+        error();
+      }, o.timeout);
+    }
 
     function complete(resp) {
       o.complete && o.complete(resp);
     }
 
     function success(resp) {
+      o.timeout && clearTimeout(self.timeout) && (self.timeout = null);
       var r = resp.responseText,
           val = /json$/i.test(type) ? JSON.parse(r) : r;
       /^js$/i.test(type) && eval(r);
@@ -50,10 +100,12 @@
       o.success && o.success(val);
       complete(val);
     }
+
     function error(resp) {
       o.error && o.error(resp);
       complete(resp);
     }
+
     this.request = getRequest(o, success, error);
   }
 
@@ -63,7 +115,7 @@
     },
 
     retry: function () {
-      this.request.send(this.o.data || null);
+      init.call(this, this.o, this.fn);
     }
   };
 

@@ -49,5 +49,19 @@ sink('Reqwest', function(test, ok, before, after) {
     });
   });
 
+  test('setRequestHeaders', 1, function () {
+    reqwest({
+      url: '/tests/fixtures/fixtures.html',
+      data: 'foo=bar&baz=thunk',
+      method: 'post',
+      headers: {
+        'Accept': 'application/x-foo'
+      },
+      success: function (resp) {
+        ok(true, 'can post headers');
+      }
+    });
+  });
+
 });
 start();
