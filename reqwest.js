@@ -26,14 +26,6 @@
     };
   }
 
-  function clone(o) {
-    var r = {};
-    for (var k in o) {
-      r[k] = o[k];
-    }
-    return r;
-  }
-
   function setHeaders(http, options) {
     var headers = options.headers;
     if (headers && options.data) {
@@ -48,6 +40,7 @@
     http.open(o.method || 'GET', typeof o == 'string' ? o : o.url, true);
     setHeaders(http, o);
     http.onreadystatechange = readyState(http, fn, err);
+    o.before && o.before(http);
     http.send(o.data || null);
     return http;
   }

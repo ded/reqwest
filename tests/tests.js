@@ -63,5 +63,19 @@ sink('Reqwest', function(test, ok, before, after) {
     });
   });
 
+  test('can inspect http before send', 2, function () {
+    var connection = reqwest({
+      url: '/tests/fixtures/fixtures.js',
+      method: 'post',
+      type: 'js',
+      before: function (http) {
+        ok(http.readyState == 1, 'received http connection object');
+      },
+      success: function () {
+        ok(connection.request.readyState == 4, 'success callback has readyState of 4');
+      }
+    });
+  });
+
 });
 start();
