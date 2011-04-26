@@ -21,11 +21,11 @@
   }
 
   function setHeaders(http, options) {
-    var headers = options.headers;
-    if (headers && options.data) {
-      headers.contentType = 'application/x-www-form-urlencoded';
+    var headers = options.headers || {};
+    headers.contentType = 'application/x-www-form-urlencoded';
+    if (options.data) {
       for (var h in headers) {
-        headers.hasOwnProperty(k) && http.setRequestHeader(h, headers[h], false);
+        headers.hasOwnProperty(h) && http.setRequestHeader(h, headers[h], false);
       }
     }
   }
