@@ -1,7 +1,7 @@
 {
   "name": "reqwest",
   "description": "A robust lightweight wrapper for asynchronous http requests",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "homepage": "https://github.com/ded/reqwest",
   "authors": ["Dustin Diaz", "Jacob Thornton"],
   "repository": {

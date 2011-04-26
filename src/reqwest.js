@@ -23,8 +23,9 @@
   function setHeaders(http, options) {
     var headers = options.headers;
     if (headers && options.data) {
+      headers.contentType = 'application/x-www-form-urlencoded';
       for (var h in headers) {
-        http.setRequestHeader(h, headers[h], false);
+        headers.hasOwnProperty(k) && http.setRequestHeader(h, headers[h], false);
       }
     }
   }
