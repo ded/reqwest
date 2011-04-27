@@ -23,8 +23,8 @@
   function setHeaders(http, options) {
     var headers = options.headers || {};
     headers.Accept = 'text/javascript, text/html, application/xml, text/xml, */*';
-    headers.contentType = 'application/x-www-form-urlencoded';
     if (options.data) {
+      headers['Content-type'] = 'application/x-www-form-urlencoded';
       for (var h in headers) {
         headers.hasOwnProperty(h) && http.setRequestHeader(h, headers[h], false);
       }
@@ -82,12 +82,24 @@
 
     function success(resp) {
       o.timeout && clearTimeout(self.timeout) && (self.timeout = null);
-      var r = resp.responseText,
-          val = /json$/i.test(type) ? JSON.parse(r) : r;
-      /^js$/i.test(type) && eval(r);
-      fn(o);
-      o.success && o.success(val);
-      complete(val);
+      var r = resp.responseText;
+
+      switch (type) {
+      case 'json':
+        resp = eval('(' + r + ')');
+        break;
+      case 'js':
+        resp = eval(r);
+        break;
+      case 'html':
+        resp = r;
+        break;
+      // default is the response from server
+      }
+
+      fn(resp);
+      o.success && o.success(resp);
+      complete(resp);
     }
 
     function error(resp) {
