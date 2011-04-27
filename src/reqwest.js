@@ -22,6 +22,7 @@
 
   function setHeaders(http, options) {
     var headers = options.headers || {};
+    headers.Accept = 'text/javascript, text/html, application/xml, text/xml, */*';
     headers.contentType = 'application/x-www-form-urlencoded';
     if (options.data) {
       for (var h in headers) {
