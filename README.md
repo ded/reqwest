@@ -1,7 +1,6 @@
-[*visitors*]: we are not currently taking support requests until we finalize a basic design
-Reqwest
--------
-It's HTML5 compliant ;)
+It's AJAX
+---------
+All over again.
 
 The happs
 ---------
