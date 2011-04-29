@@ -78,7 +78,6 @@
     if (o.timeout) {
       this.timeout = setTimeout(function () {
         self.abort();
-        error();
       }, o.timeout);
     }
 
