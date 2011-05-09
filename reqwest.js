@@ -48,7 +48,7 @@
   
   function getCallbackName(o) {
     var callbackVar = o.jsonpCallback || "callback";
-    if (o.url.substr(-10) == (callbackVar + "=?")) {
+    if (o.url.substr(-(callbackVar.length + 2)) == (callbackVar + "=?")) {
       // Generate a guaranteed unique callback name
       var callbackName = "Request" + uniqid.get();
       
