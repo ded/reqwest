@@ -13,19 +13,44 @@ The happs
 The codes
 ---------
 
-    reqwest('path/to/html', function (resp) {
-      Q('#content').html(resp);
-    });
+``` js
+reqwest('path/to/html', function (resp) {
+  Q('#content').html(resp);
+});
+```
 
-    reqwest({
-      url: 'path/to/json',
-      type: 'json',
-      method: 'post',
-      success: function (resp) {
-        Q('#content').html(resp.content);
-      },
-      failure: function (err) { }
-    });
+``` js
+reqwest({
+  url: 'path/to/json',
+  type: 'json',
+  method: 'post',
+  success: function (resp) {
+    Q('#content').html(resp.content);
+  },
+  failure: function (err) { }
+});
+```
+
+``` js
+reqwest({
+  url: 'path/to/data.jsonp?callback=?',
+  type: 'jsonp',
+  success: function (resp) {
+    Q('#content').html(resp.content);
+  }
+});
+```
+
+``` js
+reqwest({
+  url: 'path/to/data.jsonp?foo=bar',
+  type: 'jsonp',
+  jsonpCallback: 'foo',
+  success: function (resp) {
+    Q('#content').html(resp.content);
+  }
+});
+```
 
 The Tests
 -----

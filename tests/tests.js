@@ -8,6 +8,36 @@ sink('Reqwest', function(test, ok, before, after) {
       }
     });
   });
+  
+  // For some reason, using the .jsonp file extension didn't work
+  // in the testing suite. Using .js instead for now.
+  test('JSONP', 3, function() {
+    reqwest({
+      url: '/tests/fixtures/fixtures_jsonp.js?callback=?',
+      type: 'jsonp',
+      success: function (resp) {
+        ok(resp.boosh == "boosh", "evaluated response as JSONP");
+      }
+    });
+    
+    reqwest({
+      url: '/tests/fixtures/fixtures_jsonp2.js?foo=bar',
+      type: 'jsonp',
+      jsonpCallback: 'foo',
+      success: function (resp) {
+        ok(resp.boosh == "boosh", "evaluated response as JSONP with custom callback");
+      }
+    });
+    
+    reqwest({
+      url: '/tests/fixtures/fixtures_jsonp3.js?foo=?',
+      type: 'jsonp',
+      jsonpCallback: 'foo',
+      success: function (resp) {
+        ok(resp.boosh == "boosh", "evaluated response as JSONP with custom wildcard callback");
+      }
+    });
+  });
 
   test('JS', 1, function() {
     reqwest({
