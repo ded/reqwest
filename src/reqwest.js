@@ -7,6 +7,15 @@
         function () {
           return new ActiveXObject('Microsoft.XMLHTTP');
         };
+        
+  var uniqid = (function () {
+    var id = 0;
+    return {
+      get: function () {
+        return id++;
+      }
+    };
+  }());
 
   function readyState(o, success, error) {
     return function () {
@@ -30,15 +39,56 @@
       }
     }
   }
+  
+  function getCallbackName(o) {
+    var callbackVar = o.jsonpCallback || "callback";
+    if (o.url.substr(-(callbackVar.length + 2)) == (callbackVar + "=?")) {
+      // Generate a guaranteed unique callback name
+      var callbackName = "Request" + uniqid.get();
+      
+      // Replace the ? in the URL with the generated name
+      o.url = o.url.substr(0, o.url.length - 1) + callbackName;
+      return callbackName;
+    } else {
+      // Find the supplied callback name
+      var regex = new RegExp(callbackVar + "=([A-Za-z0-9_]+)");
+      return o.url.match(regex)[1];
+    }
+  }
 
   function getRequest(o, fn, err) {
-    var http = xhr();
-    http.open(o.method || 'GET', typeof o == 'string' ? o : o.url, true);
-    setHeaders(http, o);
-    http.onreadystatechange = readyState(http, fn, err);
-    o.before && o.before(http);
-    http.send(o.data || null);
-    return http;
+    if (o.type == 'jsonp') {
+      var script = document.createElement('script');
+      var head = document.getElementsByTagName('head')[0];
+      
+      // Add the global callback
+      var callbackName = getCallbackName(o);
+      window[callbackName] = function (data) {
+        // Call the success callback
+        o.success && o.success(data);
+      };
+      
+      // Setup our script element
+      script.type = "text/javascript";
+      script.src = o.url;
+      script.onload = function () {
+        // Script has been loaded, and thus the user callback has
+        // been called, so lets clean up now.
+        head.removeChild(script);
+        delete window[callbackName];
+      };
+      
+      // Add the script to the DOM head
+      head.appendChild(script);
+    } else {
+      var http = xhr();
+      http.open(o.method || 'GET', typeof o == 'string' ? o : o.url, true);
+      setHeaders(http, o);
+      http.onreadystatechange = readyState(http, fn, err);
+      o.before && o.before(http);
+      http.send(o.data || null);
+      return http;
+    }
   }
 
   function Reqwest(o, fn) {
@@ -50,6 +100,9 @@
   function setType(url) {
     if (/\.json$/.test(url)) {
       return 'json';
+    }
+    if (/\.jsonp$/.test(url)) {
+      return 'jsonp';
     }
     if (/\.js$/.test(url)) {
       return 'js';
