@@ -15,7 +15,7 @@ require('smoosh').config({
     "evil": true,
     "regexp": false,
     "undef": false,
-    "sub": false,
+    "sub": true,
     "white": true,
     "indent": 2,
     "whitespace": true,

@@ -1,4 +1,4 @@
-sink('Reqwest', function(test, ok, before, after) {
+sink('Mime types', function (test, ok) {
   test('JSON', 1, function() {
     reqwest({
       url: '/tests/fixtures/fixtures.json',
@@ -8,7 +8,7 @@ sink('Reqwest', function(test, ok, before, after) {
       }
     });
   });
-  
+
   // For some reason, using the .jsonp file extension didn't work
   // in the testing suite. Using .js instead for now.
   test('JSONP', 3, function() {
@@ -19,7 +19,7 @@ sink('Reqwest', function(test, ok, before, after) {
         ok(resp.boosh == "boosh", "evaluated response as JSONP");
       }
     });
-    
+
     reqwest({
       url: '/tests/fixtures/fixtures_jsonp2.js?foo=bar',
       type: 'jsonp',
@@ -28,7 +28,7 @@ sink('Reqwest', function(test, ok, before, after) {
         ok(resp.boosh == "boosh", "evaluated response as JSONP with custom callback");
       }
     });
-    
+
     reqwest({
       url: '/tests/fixtures/fixtures_jsonp3.js?foo=?',
       type: 'jsonp',
@@ -59,6 +59,10 @@ sink('Reqwest', function(test, ok, before, after) {
     });
   });
 
+});
+
+sink('Callbacks', function (test, ok) {
+
   test('no callbacks', 1, function () {
     var pass = true;
     try {
@@ -78,6 +82,10 @@ sink('Reqwest', function(test, ok, before, after) {
       }
     });
   });
+
+});
+
+sink('Connection Object', function (test, ok) {
 
   test('setRequestHeaders', 1, function () {
     reqwest({
@@ -107,5 +115,34 @@ sink('Reqwest', function(test, ok, before, after) {
     });
   });
 
+  sink('Serializing', function (test, ok) {
+
+    test('serialize', 1, function () {
+      var expected = 'foo=bar&bar=baz&wha=1&wha=3&choices=two&opinions=world%20peace%20is%20not%20real';
+      ok(reqwest.serialize(document.forms[0]) == expected, 'serialized form');
+    });
+
+    test('serializeArray', 6, function () {
+      var expected = [
+        { name: 'foo', value: 'bar' },
+        { name: 'bar', value: 'baz' },
+        { name: 'wha', value: 1 },
+        { name: 'wha', value: 3 },
+        { name: 'choices', value: 'two' },
+        { name: 'opinions', value: 'world%20peace%20is%20not%20real' }
+      ];
+
+      var result = reqwest.serializeArray(document.forms[0]);
+
+      for (var i = 0; i < expected.length; i++) {
+        ok(result.some(function (v) {
+          return v.name == expected[i].name && v.value == expected[i].value;
+        }), 'serialized ' + result[i].name);
+      }
+    });
+
+  });
+
 });
+
 start();

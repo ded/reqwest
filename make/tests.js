@@ -1,9 +1,11 @@
 var http = require('http'),
     exec = require('child_process').exec,
     fs = require('fs'),
-    Connect = require('../build/connect/'),
-    dispatch = require('../build/dispatch/'),
-    mime = require('../build/mime/');
+    Connect = require('connect'),
+    dispatch = require('dispatch'),
+    mime = require('mime');
+
+
 
 var routes = {
   '/': function (req, res) {
@@ -11,7 +13,7 @@ var routes = {
     res.end();
   },
 
-  '(([a-zA-Z0-9_\\-\\/]+)\\.(css|js|json|html)$)': function (req, res, m, whole, file, ext) {
+  '(([a-zA-Z0-9_\\-\\/]+)\\.(css|js|json|html)$)': function (req, res, m, file, ext) {
     res.writeHead(200, {'Content-Type': mime.lookup(ext)});
     var asset = fs.readFileSync('./' + file + '.' + ext);
     res.write(asset);

@@ -4,11 +4,34 @@
     <title>Reqwest tests</title>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8">
     <link rel="stylesheet" href="/build/sink/src/sink.css" type="text/css">
+    <script src="/build/valentine/valentine.js"></script>
     <script src="/build/sink/src/sink.js"></script>
     <script src="src/reqwest.js"></script>
+    <style type="text/css">
+      #fixtures {
+        position: absolute;
+        top: -9999em;
+      }
+    </style>
   </head>
   <body>
     <h1>Reqwest Tests</h1>
+    <div id="fixtures">
+      <form action="/foo" method="post">
+        <input type="submit" value="Continue">
+        <input type="text" name="foo" value="bar">
+        <input type="hidden" name="bar" value="baz">
+        <input type="checkbox" name="wha" checked value="1">
+        <input type="checkbox" name="wha" value="2">
+        <input type="checkbox" name="wha" checked value="3">
+        <select name="choices">
+          <option>one</option>
+          <option selected>two</option>
+          <option>tres</option>
+        </select>
+        <textarea name="opinions">world peace is not real</textarea>
+      </form>
+    </div>
     <ol id="tests"></ol>
     <script src="/tests/tests.js"></script>
   </body>

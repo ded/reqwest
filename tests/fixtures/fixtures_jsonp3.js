@@ -1,1 +1,1 @@
-Request1({ "boosh": "boosh" });
+reqwest_1({ "boosh": "boosh" });

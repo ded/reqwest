@@ -5,17 +5,18 @@ All over again.
 The happs
 ---------
 
-    git clone git://github.com/ded/Reqwest.git
-    cd !$
-    git submodule update --init
-    make
+    $ git clone git://github.com/ded/reqwest.git
+    $ cd reqwest
+    $ git submodule update --init
+    $ make
+    $ make install
 
-The codes
+API
 ---------
 
 ``` js
 reqwest('path/to/html', function (resp) {
-  Q('#content').html(resp);
+  qwery('#content').html(resp);
 });
 ```
 
@@ -25,7 +26,7 @@ reqwest({
   type: 'json',
   method: 'post',
   success: function (resp) {
-    Q('#content').html(resp.content);
+    qwery('#content').html(resp.content);
   },
   failure: function (err) { }
 });
@@ -36,7 +37,7 @@ reqwest({
   url: 'path/to/data.jsonp?callback=?',
   type: 'jsonp',
   success: function (resp) {
-    Q('#content').html(resp.content);
+    qwery('#content').html(resp.content);
   }
 });
 ```
@@ -47,7 +48,7 @@ reqwest({
   type: 'jsonp',
   jsonpCallback: 'foo',
   success: function (resp) {
-    Q('#content').html(resp.content);
+    qwery('#content').html(resp.content);
   }
 });
 ```
@@ -55,8 +56,7 @@ reqwest({
 The Tests
 -----
     make test
-    open http://localhost:3000
-
+    open http://localhost:1234
 
 Browser support
 ---------------

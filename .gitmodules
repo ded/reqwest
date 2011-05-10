@@ -13,3 +13,6 @@
 [submodule "build/connect"]
 	path = build/connect
 	url = git://github.com/senchalabs/connect.git
+[submodule "build/valentine"]
+	path = build/valentine
+	url = git://github.com/ded/valentine.git

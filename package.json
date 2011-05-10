@@ -1,13 +1,16 @@
 {
   "name": "reqwest",
   "description": "A robust lightweight wrapper for asynchronous http requests",
-  "version": "0.0.9",
+  "version": "0.1.0",
   "homepage": "https://github.com/ded/reqwest",
-  "authors": ["Dustin Diaz", "Jacob Thornton"],
+  "author": "Dustin Diaz <@ded>",
   "repository": {
     "type": "git",
     "url": "https://github.com/ded/reqwest.git"
   },
   "main": "./reqwest.js",
-  "ender": "./src/ender.js"
+  "ender": "./src/ender.js",
+  "dependencies": {
+    "valentine": ">= 1.1.0"
+  }
 }

@@ -1,5 +1,15 @@
-!function (context) {
+/*!
+  * Reqwest! A x-browser general purpose XHR connection manager
+  * copyright Dustin Diaz 2011
+  * https://github.com/ded/reqwest
+  * license MIT
+  */
+!function (window) {
   var twoHundo = /^20\d$/,
+      doc = document,
+      byTag = 'getElementsByTagName',
+      topScript = doc[byTag]('script')[0],
+      head = topScript.parentNode,
       xhr = ('XMLHttpRequest' in window) ?
         function () {
           return new XMLHttpRequest();
@@ -7,15 +17,8 @@
         function () {
           return new ActiveXObject('Microsoft.XMLHTTP');
         };
-        
-  var uniqid = (function () {
-    var id = 0;
-    return {
-      get: function () {
-        return id++;
-      }
-    };
-  }());
+
+  var uniqid = 0;
 
   function readyState(o, success, error) {
     return function () {
@@ -39,47 +42,47 @@
       }
     }
   }
-  
+
   function getCallbackName(o) {
     var callbackVar = o.jsonpCallback || "callback";
     if (o.url.substr(-(callbackVar.length + 2)) == (callbackVar + "=?")) {
       // Generate a guaranteed unique callback name
-      var callbackName = "Request" + uniqid.get();
-      
+      var callbackName = "reqwest_" + uniqid++;
+
       // Replace the ? in the URL with the generated name
       o.url = o.url.substr(0, o.url.length - 1) + callbackName;
       return callbackName;
     } else {
       // Find the supplied callback name
-      var regex = new RegExp(callbackVar + "=([A-Za-z0-9_]+)");
+      var regex = new RegExp(callbackVar + "=([\\w]+)");
       return o.url.match(regex)[1];
     }
   }
 
   function getRequest(o, fn, err) {
     if (o.type == 'jsonp') {
-      var script = document.createElement('script');
-      var head = document.getElementsByTagName('head')[0];
-      
+      var script = doc.createElement('script');
+
       // Add the global callback
       var callbackName = getCallbackName(o);
       window[callbackName] = function (data) {
         // Call the success callback
         o.success && o.success(data);
       };
-      
+
       // Setup our script element
       script.type = "text/javascript";
       script.src = o.url;
+      script.async = true;
       script.onload = function () {
         // Script has been loaded, and thus the user callback has
         // been called, so lets clean up now.
         head.removeChild(script);
         delete window[callbackName];
       };
-      
+
       // Add the script to the DOM head
-      head.appendChild(script);
+      head.insertBefore(script, topScript);
     } else {
       var http = xhr();
       http.open(o.method || 'GET', typeof o == 'string' ? o : o.url, true);
@@ -177,11 +180,66 @@
     return new Reqwest(o, fn);
   }
 
-  var old = context.reqwest;
+  function enc(v) {
+    return encodeURIComponent(v);
+  }
+
+  function serial(el) {
+    var n = el.name;
+    // don't serialize elements that are disabled or without a name
+    if (el.disabled || !n) {
+      return '';
+    }
+    n = enc(n);
+    switch (el.tagName.toLowerCase()) {
+    case 'input':
+      switch (el.type) {
+      // silly wabbit
+      case 'reset':
+      case 'button':
+      case 'image':
+      case 'file':
+        return '';
+      case 'checkbox':
+      case 'radio':
+        return el.checked ? n + '=' + (el.value ? enc(el.value) : true) + '&' : '';
+      default: // text hidden password submit
+        return n + '=' + (el.value ? enc(el.value) : true) + '&';
+      }
+      break;
+    case 'textarea':
+      return n + '=' + enc(el.value) + '&';
+    case 'select':
+      // @todo refactor beyond basic single selected value case
+      return n + '=' + enc(el.options[el.selectedIndex].value) + '&';
+    }
+    return '';
+  }
+
+  reqwest.serialize = function (form) {
+    var inputs = form[byTag]('input'),
+        selects = form[byTag]('select'),
+        texts = form[byTag]('textarea');
+    return (v(inputs).chain().toArray().map(serial).value().join('') +
+    v(selects).chain().toArray().map(serial).value().join('') +
+    v(texts).chain().toArray().map(serial).value().join('')).replace(/&$/, '');
+  };
+
+  reqwest.serializeArray = function (f) {
+    for (var pairs = this.serialize(f).split('&'), i = 0, l = pairs.length, r = [], o; i < l; i++) {
+      pairs[i] && (o = pairs[i].split('=')) && r.push({name: o[0], value: o[1]});
+    }
+    return r;
+  };
+
+  var old = window.reqwest;
   reqwest.noConflict = function () {
-    context.reqwest = old;
+    window.reqwest = old;
     return this;
   };
-  context.reqwest = reqwest;
+
+  // defined as extern for Closure Compilation
+  // do not change to (dot) '.' syntax
+  window['reqwest'] = reqwest;
 
 }(this);
