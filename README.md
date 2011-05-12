@@ -66,6 +66,17 @@ Browser support
   * Firefox 1+
   * Opera
 
-Build
------
-[Node.js](https://github.com/joyent/node/) is required to run tests and build + minify the Reqwest code.
+Ender Support
+-------------
+Reqwest can be used as an [Ender](http://ender.no.de) module. Add it to your existing build as such:
+
+    $ ender add reqwest
+
+Use it as such:
+
+``` js
+$.ajax({ ... });
+$(form).serialize();
+```
+
+**Happy Ajaxing!**
