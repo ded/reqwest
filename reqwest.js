@@ -35,6 +35,7 @@
   function setHeaders(http, options) {
     var headers = options.headers || {};
     headers.Accept = 'text/javascript, text/html, application/xml, text/xml, */*';
+    headers['X-Requested-With'] = headers['X-Requested-With'] || 'XMLHttpRequest';
     if (options.data) {
       headers['Content-type'] = 'application/x-www-form-urlencoded';
       for (var h in headers) {
@@ -45,7 +46,7 @@
 
   function getCallbackName(o) {
     var callbackVar = o.jsonpCallback || "callback";
-    if (o.url.slice(-(callbackVar.length + 2)) == (callbackVar + "=?")) {
+    if (o.url.substr(-(callbackVar.length + 2)) == (callbackVar + "=?")) {
       // Generate a guaranteed unique callback name
       var callbackName = "reqwest_" + uniqid++;
 
