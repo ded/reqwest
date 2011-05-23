@@ -7,9 +7,8 @@ The happs
 
     $ git clone git://github.com/ded/reqwest.git
     $ cd reqwest
-    $ git submodule update --init
-    $ make
-    $ make install
+    $ npm install --dev
+    $ npm run-script boosh
 
 API
 ---------
@@ -54,8 +53,8 @@ reqwest({
 ```
 
 The Tests
------
-    make test
+---------
+    npm test
     open http://localhost:1234
 
 Browser support
