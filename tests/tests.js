@@ -143,6 +143,42 @@ sink('Connection Object', function (test, ok) {
 
   });
 
+
+  sink('Parallel Calls', function (test, ok) {
+
+    test('multiple named callbacks', 4, function () {
+      reqwest({
+        url: '/tests/fixtures/fixtures_jsonp_multi.js?callback=reqwest_0',
+        type: 'jsonp',
+        success: function (resp) {
+          ok(resp.a == "a", "evaluated response as JSONP");
+        }
+      });
+      reqwest({
+        url: '/tests/fixtures/fixtures_jsonp_multi_b.js?callback=reqwest_0',
+        type: 'jsonp',
+        success: function (resp) {
+          ok(resp.b == "b", "evaluated response as JSONP");
+        }
+      });
+      reqwest({
+        url: '/tests/fixtures/fixtures_jsonp_multi_c.js?callback=reqwest_0',
+        type: 'jsonp',
+        success: function (resp) {
+          ok(resp.c == "c", "evaluated response as JSONP");
+        }
+      });
+      reqwest({
+        url: '/tests/fixtures/fixtures_jsonp_multi.js?callback=reqwest_0',
+        type: 'jsonp',
+        success: function (resp) {
+          ok(resp.a == "a", "evaluated response as JSONP");
+        }
+      });
+    });
+
+  });
+
 });
 
 start();
