@@ -5,8 +5,6 @@ var http = require('http'),
     dispatch = require('dispatch'),
     mime = require('mime');
 
-
-
 var routes = {
   '/': function (req, res) {
     res.write(fs.readFileSync('./tests/tests.html', 'utf8'));

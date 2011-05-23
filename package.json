@@ -13,5 +13,16 @@
   "ender": "./src/ender.js",
   "dependencies": {
     "valentine": ">= 1.1.0"
+  },
+  "devDependencies": {
+    "connect": "1.x.x",
+    "mime": "1.x.x",
+    "sink-test": "0.x.x",
+    "smoosh": "0.2.x",
+    "dispatch": "0.x.x"
+  },
+  "scripts": {
+    "boosh": "node Makefile.js",
+    "test": "node make/tests.js"
   }
 }
