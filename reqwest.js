@@ -19,6 +19,8 @@
         };
 
   var uniqid = 0;
+  // data stored by the most recent JSONP callback
+  var lastValue;
 
   function readyState(o, success, error) {
     return function () {
@@ -60,26 +62,31 @@
     }
   }
 
+  // Store the data returned by the most recent callback
+  function generalCallback(data) {
+    lastValue = data;
+  }
+
   function getRequest(o, fn, err) {
     if (o.type == 'jsonp') {
       var script = doc.createElement('script');
 
       // Add the global callback
       var callbackName = getCallbackName(o);
-      window[callbackName] = function (data) {
-        // Call the success callback
-        o.success && o.success(data);
-      };
+
+
+      window[callbackName] = generalCallback;
 
       // Setup our script element
       script.type = "text/javascript";
       script.src = o.url;
       script.async = true;
       script.onload = function () {
-        // Script has been loaded, and thus the user callback has
-        // been called, so lets clean up now.
+        // Call the user callback with the last value stored
+        // and clean up values and scripts.
+        o.success && o.success(lastValue);
+        lastValue = undefined;
         head.removeChild(script);
-        delete window[callbackName];
       };
 
       // Add the script to the DOM head
