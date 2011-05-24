@@ -2,8 +2,7 @@
   var twoHundo = /^20\d$/,
       doc = document,
       byTag = 'getElementsByTagName',
-      topScript = doc[byTag]('script')[0],
-      head = topScript.parentNode,
+      head = doc[byTag]('head')[0],
       xhr = ('XMLHttpRequest' in window) ?
         function () {
           return new XMLHttpRequest();
@@ -42,7 +41,7 @@
 
   function getCallbackName(o) {
     var callbackVar = o.jsonpCallback || "callback";
-    if (o.url.substr(-(callbackVar.length + 2)) == (callbackVar + "=?")) {
+    if (o.url.slice(-(callbackVar.length + 2)) == (callbackVar + "=?")) {
       // Generate a guaranteed unique callback name
       var callbackName = "reqwest_" + uniqid++;
 
@@ -84,7 +83,7 @@
       };
 
       // Add the script to the DOM head
-      head.insertBefore(script, topScript);
+      head.appendChild(script);
     } else {
       var http = xhr();
       http.open(o.method || 'GET', typeof o == 'string' ? o : o.url, true);
