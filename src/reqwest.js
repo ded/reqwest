@@ -42,7 +42,7 @@
 
   function getCallbackName(o) {
     var callbackVar = o.jsonpCallback || "callback";
-    if (o.url.substr(-(callbackVar.length + 2)) == (callbackVar + "=?")) {
+    if (o.url.slice(-(callbackVar.length + 2)) == (callbackVar + "=?")) {
       // Generate a guaranteed unique callback name
       var callbackName = "reqwest_" + uniqid++;
 
