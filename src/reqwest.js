@@ -74,6 +74,14 @@
       script.type = "text/javascript";
       script.src = o.url;
       script.async = true;
+      // For IE
+      script.onreadystatechange = function () {
+        if (script.readyState == "loaded") {
+          o.success && o.success(lastValue);
+          lastValue = undefined;
+          head.removeChild(script);
+        }
+      };
       script.onload = function () {
         // Call the user callback with the last value stored
         // and clean up values and scripts.
