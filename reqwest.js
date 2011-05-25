@@ -71,31 +71,27 @@
       var script = doc.createElement('script');
 
       // Add the global callback
-      var callbackName = getCallbackName(o);
-
-
-      window[callbackName] = generalCallback;
+      window[getCallbackName(o)] = generalCallback;
 
       // Setup our script element
       script.type = "text/javascript";
       script.src = o.url;
       script.async = true;
-      // For IE
-      script.onreadystatechange = function () {
-        if (script.readyState == "loaded") {
-          o.success && o.success(lastValue);
-          lastValue = undefined;
-          head.removeChild(script);
-        }
-      };
-      script.onload = function () {
+      
+      var onload = function () {
         // Call the user callback with the last value stored
         // and clean up values and scripts.
         o.success && o.success(lastValue);
         lastValue = undefined;
         head.removeChild(script);
       };
-
+      
+      script.onload = onload;
+      // onload for IE
+      script.onreadystatechange = function () {
+        script.readyState == "loaded" && onload();
+      };
+      
       // Add the script to the DOM head
       head.appendChild(script);
     } else {
