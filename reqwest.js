@@ -38,7 +38,7 @@
     headers.Accept = 'text/javascript, text/html, application/xml, text/xml, */*';
     headers['X-Requested-With'] = headers['X-Requested-With'] || 'XMLHttpRequest';
     if (options.data) {
-      headers['Content-type'] = 'application/x-www-form-urlencoded';
+      headers['Content-type'] = headers['Content-type'] || 'application/x-www-form-urlencoded';
       for (var h in headers) {
         headers.hasOwnProperty(h) && http.setRequestHeader(h, headers[h], false);
       }
