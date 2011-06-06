@@ -209,7 +209,7 @@
       case 'radio':
         return el.checked ? n + '=' + (el.value ? enc(el.value) : true) + '&' : '';
       default: // text hidden password submit
-        return n + '=' + (el.value ? enc(el.value) : true) + '&';
+        return n + '=' + (el.value ? enc(el.value) : '') + '&';
       }
       break;
     case 'textarea':
