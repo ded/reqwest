@@ -27,7 +27,7 @@ reqwest({
   success: function (resp) {
     qwery('#content').html(resp.content);
   },
-  failure: function (err) { }
+  error: function (err) { }
 });
 ```
 
