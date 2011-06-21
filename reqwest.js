@@ -149,11 +149,11 @@
 
     function success(resp) {
       o.timeout && clearTimeout(self.timeout) && (self.timeout = null);
-      var r = resp.responseText;
+      var r = resp.responseText, JSON;
 
       switch (type) {
       case 'json':
-        resp = eval('(' + r + ')');
+        resp = JSON ? JSON.parse(r) : eval('(' + r + ')');
         break;
       case 'js':
         resp = eval(r);
