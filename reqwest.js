@@ -35,7 +35,7 @@
 
   function setHeaders(http, options) {
     var headers = options.headers || {};
-    headers.Accept = 'text/javascript, text/html, application/xml, text/xml, */*';
+    headers.Accept = headers.Accept || 'text/javascript, text/html, application/xml, text/xml, */*';
     headers['X-Requested-With'] = headers['X-Requested-With'] || 'XMLHttpRequest';
     if (options.data) {
       headers['Content-type'] = headers['Content-type'] || 'application/x-www-form-urlencoded';
@@ -149,11 +149,11 @@
 
     function success(resp) {
       o.timeout && clearTimeout(self.timeout) && (self.timeout = null);
-      var r = resp.responseText;
+      var r = resp.responseText, JSON;
 
       switch (type) {
       case 'json':
-        resp = eval('(' + r + ')');
+        resp = JSON ? JSON.parse(r) : eval('(' + r + ')');
         break;
       case 'js':
         resp = eval(r);
