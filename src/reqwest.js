@@ -27,11 +27,16 @@
     };
   }
 
-  function setHeaders(http, options) {
-    var headers = options.headers || {};
+  function setHeaders(http, o) {
+    var headers = o.headers || {};
     headers.Accept = headers.Accept || 'text/javascript, text/html, application/xml, text/xml, */*';
-    headers['X-Requested-With'] = headers['X-Requested-With'] || 'XMLHttpRequest';
-    if (options.data) {
+
+    // breaks cross-origin requests with legacy browsers
+    if (!o.crossOrigin) {
+      headers['X-Requested-With'] = headers['X-Requested-With'] || 'XMLHttpRequest';
+    }
+
+    if (o.data) {
       headers['Content-type'] = headers['Content-type'] || 'application/x-www-form-urlencoded';
       for (var h in headers) {
         headers.hasOwnProperty(h) && http.setRequestHeader(h, headers[h], false);
