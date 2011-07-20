@@ -1,4 +1,11 @@
 !function (window) {
+
+  // require valentine module
+  var v = window.v;
+  if (!v && (typeof require !== 'undefined')) {
+    v = require('valentine');
+  }
+
   var twoHundo = /^20\d$/,
       doc = document,
       byTag = 'getElementsByTagName',
