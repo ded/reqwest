@@ -155,19 +155,21 @@
 
     function success(resp) {
       o.timeout && clearTimeout(self.timeout) && (self.timeout = null);
-      var r = resp.responseText, JSON;
+      var r = resp.responseText;
 
-      switch (type) {
-      case 'json':
-        resp = JSON ? JSON.parse(r) : eval('(' + r + ')');
-        break;
-      case 'js':
-        resp = eval(r);
-        break;
-      case 'html':
-        resp = r;
-        break;
-      // default is the response from server
+      if (r) {
+        switch (type) {
+        case 'json':
+          resp = window.JSON ? window.JSON.parse(r) : eval('(' + r + ')');
+          break;
+        case 'js':
+          resp = eval(r);
+          break;
+        case 'html':
+          resp = r;
+          break;
+        // default is the response from server
+        }
       }
 
       fn(resp);
