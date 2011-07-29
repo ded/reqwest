@@ -151,16 +151,16 @@
     if (o.timeout) {
       this.timeout = setTimeout(function () {
         self.abort();
-        error();
       }, o.timeout);
     }
 
     function complete(resp) {
+      o.timeout && clearTimeout(self.timeout);
+      self.timeout = null;
       o.complete && o.complete(resp);
     }
 
     function success(resp) {
-      o.timeout && clearTimeout(self.timeout) && (self.timeout = null);
       var r = resp.responseText;
 
       if (r) {
