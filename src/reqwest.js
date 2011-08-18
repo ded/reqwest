@@ -1,11 +1,5 @@
 !function (window) {
 
-  // require valentine module
-  var v = window.v;
-  if (!v && (typeof require !== 'undefined')) {
-    v = require('valentine');
-  }
-
   var twoHundo = /^20\d$/,
       doc = document,
       byTag = 'getElementsByTagName',
@@ -236,12 +230,16 @@
   }
 
   reqwest.serialize = function (form) {
-    var inputs = form[byTag]('input'),
-        selects = form[byTag]('select'),
-        texts = form[byTag]('textarea');
-    return (v(inputs).chain().toArray().map(serial).value().join('') +
-    v(selects).chain().toArray().map(serial).value().join('') +
-    v(texts).chain().toArray().map(serial).value().join('')).replace(/&$/, '');
+    var fields = [form[byTag]('input'),
+                  form[byTag]('select'),
+                  form[byTag]('textarea')],
+        serialized = [];
+    for (var i = 0, l = fields.length; i < l; ++i) {
+      for (var j = 0, l2 = fields[i].length; j < l2; ++j) {
+        serialized.push(serial(fields[i][j]));
+      }
+    }
+    return serialized.join('').replace(/&$/, '');
   };
 
   reqwest.serializeArray = function (f) {
