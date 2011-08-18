@@ -12,7 +12,6 @@
   "main": "./reqwest.js",
   "ender": "./src/ender.js",
   "dependencies": {
-    "valentine": ">= 1.1.0"
   },
   "devDependencies": {
     "connect": "1.x.x",
