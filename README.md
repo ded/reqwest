@@ -76,6 +76,7 @@ Use it as such:
 ``` js
 $.ajax({ ... });
 $(form).serialize();
+$(form).serializeArray();
 ```
 
 **Happy Ajaxing!**
