@@ -1,11 +1,12 @@
+var r = require('reqwest')
 ender.ender({
-  ajax: reqwest
-});
+  ajax: r
+})
 ender.ender({
   serialize: function () {
-    return reqwest.serialize(this[0]);
+    return r.serialize(this[0])
   }
   , serializeArray: function() {
-    return reqwest.serializeArray(this[0]);
+    return r.serializeArray(this[0])
   }
-}, true);
+}, true)
