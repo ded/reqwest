@@ -1,61 +1,60 @@
-It's AJAX
----------
+# It's AJAX
+
 All over again.
 
 The happs
 ---------
 
-    $ git clone git://github.com/ded/reqwest.git
-    $ cd reqwest
+    $ git clone git://github.com/ded/reqwest.git reqwest
+    $ cd !$
     $ npm install --dev
-    $ npm run-script boosh
+    $ make
 
 API
 ---------
 
 ``` js
 reqwest('path/to/html', function (resp) {
-  qwery('#content').html(resp);
-});
+  qwery('#content').html(resp)
+})
 ```
 
 ``` js
 reqwest({
-  url: 'path/to/json',
-  type: 'json',
-  method: 'post',
-  success: function (resp) {
-    qwery('#content').html(resp.content);
-  },
-  error: function (err) { }
-});
+    url: 'path/to/json'
+  , type: 'json'
+  , method: 'post'
+  , error: function (err) { }
+  , success: function (resp) {
+      qwery('#content').html(resp.content)
+    }
+})
 ```
 
 ``` js
 reqwest({
-  url: 'path/to/data.jsonp?callback=?',
-  type: 'jsonp',
-  success: function (resp) {
-    qwery('#content').html(resp.content);
-  }
-});
+    url: 'path/to/data.jsonp?callback=?'
+  , type: 'jsonp',
+  , success: function (resp) {
+      qwery('#content').html(resp.content)
+    }
+})
 ```
 
 ``` js
 reqwest({
-  url: 'path/to/data.jsonp?foo=bar',
-  type: 'jsonp',
-  jsonpCallback: 'foo',
-  success: function (resp) {
-    qwery('#content').html(resp.content);
-  }
-});
+    url: 'path/to/data.jsonp?foo=bar'
+  , type: 'jsonp'
+  , jsonpCallback: 'foo'
+  , success: function (resp) {
+      qwery('#content').html(resp.content)
+    }
+})
 ```
 
 The Tests
 ---------
-    npm test
-    open http://localhost:1234
+    $ npm test
 
 Browser support
 ---------------
@@ -74,9 +73,9 @@ Reqwest can be used as an [Ender](http://ender.no.de) module. Add it to your exi
 Use it as such:
 
 ``` js
-$.ajax({ ... });
-$(form).serialize();
-$(form).serializeArray();
+$.ajax({ ... })
+$(form).serialize()
+$(form).serializeArray()
 ```
 
 **Happy Ajaxing!**

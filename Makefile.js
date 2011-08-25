@@ -19,6 +19,7 @@ require('smoosh').config({
     "white": true,
     "indent": 2,
     "whitespace": true,
-    "asi": false
+    "asi": true,
+    "laxbreak": true
   }
 }).run().build().analyze();
