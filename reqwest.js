@@ -260,7 +260,7 @@
   }
 
   // defined as extern for Closure Compilation
-  if (typeof module !== 'undefined' && module.exports = reqwest) {}
+  if (typeof module !== 'undefined' && (module.exports = reqwest)) {}
   context['reqwest'] = reqwest
 
 }(this, window)
