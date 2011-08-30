@@ -36,7 +36,7 @@
     }
 
     if (o.data) {
-      headers['Content-type'] = headers['Content-type'] || 'application/x-www-form-urlencoded'
+      headers['Content-Type'] = headers['Content-Type'] || 'application/x-www-form-urlencoded'
     }
     for (var h in headers) {
       headers.hasOwnProperty(h) && http.setRequestHeader(h, headers[h], false)
