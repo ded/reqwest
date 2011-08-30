@@ -3,6 +3,7 @@
   var twoHundo = /^20\d$/
     , doc = document
     , byTag = 'getElementsByTagName'
+    , contentType = 'Content-Type'
     , head = doc[byTag]('head')[0]
     , uniqid = 0
     , lastValue // data stored by the most recent JSONP callback
@@ -36,7 +37,7 @@
     }
 
     if (o.data) {
-      headers['Content-Type'] = headers['Content-Type'] || 'application/x-www-form-urlencoded'
+      headers[contentType] = headers[contentType] || 'application/x-www-form-urlencoded'
     }
     for (var h in headers) {
       headers.hasOwnProperty(h) && http.setRequestHeader(h, headers[h], false)
@@ -159,7 +160,6 @@
         case 'html':
           resp = r
           break;
-        // default is the response from server
         }
       }
 
@@ -179,9 +179,9 @@
   Reqwest.prototype = {
     abort: function () {
       this.request.abort()
-    },
+    }
 
-    retry: function () {
+  , retry: function () {
       init.call(this, this.o, this.fn)
     }
   }
@@ -254,7 +254,8 @@
   }
 
   // defined as extern for Closure Compilation
-  if (typeof module !== 'undefined' && module.exports = reqwest) {}
+  if (typeof module !== 'undefined')
+  module.exports = reqwest
   context['reqwest'] = reqwest
 
 }(this, window)

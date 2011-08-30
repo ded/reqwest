@@ -7,19 +7,19 @@ require('smoosh').config({
     ]
   },
   "JSHINT_OPTS": {
-    "boss": true,
-    "forin": false,
-    "curly": false,
-    "debug": false,
-    "devel": false,
-    "evil": true,
-    "regexp": false,
-    "undef": false,
-    "sub": true,
-    "white": true,
-    "indent": 2,
-    "whitespace": true,
-    "asi": true,
-    "laxbreak": true
+      "boss": true
+    , "forin": false
+    , "curly": false
+    , "debug": false
+    , "devel": false
+    , "evil": true
+    , "regexp": false
+    , "undef": false
+    , "sub": true
+    , "white": true
+    , "indent": 2
+    , "whitespace": true
+    , "asi": true
+    , "laxbreak": true
   }
 }).run().build().analyze();
