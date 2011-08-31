@@ -132,17 +132,22 @@ sink('Connection Object', function (test, ok) {
         { name: 'opinions', value: 'world%20peace%20is%20not%20real' }
       ];
 
-      var result = reqwest.serializeArray(document.forms[0]);
+      var result = reqwest.serializeArray(document.forms[0]),
+          found = false;
 
       for (var i = 0; i < expected.length; i++) {
-        ok(result.some(function (v) {
-          return v.name == expected[i].name && v.value == expected[i].value;
-        }), 'serialized ' + result[i].name);
+        found = false;
+        for (var j = 0; j < result.length; j++) {
+            if (result[j].name == expected[i].name &&
+              result[j].value == expected[i].value) {
+              found = true;
+              break;
+            }
+        }
+        ok(found, 'serialized ' + result[i].name);
       }
     });
-
   });
-
 
   sink('Parallel Calls', function (test, ok) {
 
