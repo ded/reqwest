@@ -4,7 +4,8 @@ sink('Mime types', function (test, ok) {
       url: '/tests/fixtures/fixtures.json',
       type: 'json',
       success: function (resp) {
-        ok(resp.boosh == 'boosh', 'evaluated response as JSON');
+        ok(resp.boosh == 'boosh',
+           'evaluated response as JSON');
       }
     });
   });
@@ -16,7 +17,9 @@ sink('Mime types', function (test, ok) {
       url: '/tests/fixtures/fixtures_jsonp.js?callback=?',
       type: 'jsonp',
       success: function (resp) {
-        ok(resp.boosh == "boosh", "evaluated response as JSONP");
+        ok(resp, 'response was true-ish');
+        ok(resp && resp.boosh == "boosh",
+           "evaluated response as JSONP");
       }
     });
 
@@ -25,7 +28,9 @@ sink('Mime types', function (test, ok) {
       type: 'jsonp',
       jsonpCallback: 'foo',
       success: function (resp) {
-        ok(resp.boosh == "boosh", "evaluated response as JSONP with custom callback");
+        ok(resp, 'response was true-ish');
+        ok(resp && resp.boosh == "boosh",
+           "evaluated response as JSONP with custom callback");
       }
     });
 
@@ -34,7 +39,9 @@ sink('Mime types', function (test, ok) {
       type: 'jsonp',
       jsonpCallback: 'foo',
       success: function (resp) {
-        ok(resp.boosh == "boosh", "evaluated response as JSONP with custom wildcard callback");
+        ok(resp, 'response was true-ish');
+        ok(resp && resp.boosh == "boosh",
+           "evaluated response as JSONP with custom wildcard callback");
       }
     });
   });
@@ -54,7 +61,7 @@ sink('Mime types', function (test, ok) {
       url: '/tests/fixtures/fixtures.html',
       type: 'html',
       success: function (resp) {
-        ok(resp == '<p>boosh</p>', 'evaluated response as HTML');
+        resp && ok(resp == '<p>boosh</p>', 'evaluated response as HTML');
       }
     });
   });
@@ -132,17 +139,22 @@ sink('Connection Object', function (test, ok) {
         { name: 'opinions', value: 'world%20peace%20is%20not%20real' }
       ];
 
-      var result = reqwest.serializeArray(document.forms[0]);
+      var result = reqwest.serializeArray(document.forms[0]),
+          found = false;
 
       for (var i = 0; i < expected.length; i++) {
-        ok(result.some(function (v) {
-          return v.name == expected[i].name && v.value == expected[i].value;
-        }), 'serialized ' + result[i].name);
+        found = false;
+        for (var j = 0; j < result.length; j++) {
+            if (result[j].name == expected[i].name &&
+              result[j].value == expected[i].value) {
+              found = true;
+              break;
+            }
+        }
+        ok(found, 'serialized ' + result[i].name);
       }
     });
-
   });
-
 
   sink('Parallel Calls', function (test, ok) {
 
@@ -151,28 +163,32 @@ sink('Connection Object', function (test, ok) {
         url: '/tests/fixtures/fixtures_jsonp_multi.js?callback=reqwest_0',
         type: 'jsonp',
         success: function (resp) {
-          ok(resp.a == "a", "evaluated response as JSONP");
+          ok(resp, 'response was true-ish');
+          ok(resp && resp.a == "a", "evaluated response as JSONP");
         }
       });
       reqwest({
         url: '/tests/fixtures/fixtures_jsonp_multi_b.js?callback=reqwest_0',
         type: 'jsonp',
         success: function (resp) {
-          ok(resp.b == "b", "evaluated response as JSONP");
+          ok(resp, 'response was true-ish');
+          ok(resp && resp.b == "b", "evaluated response as JSONP");
         }
       });
       reqwest({
         url: '/tests/fixtures/fixtures_jsonp_multi_c.js?callback=reqwest_0',
         type: 'jsonp',
         success: function (resp) {
-          ok(resp.c == "c", "evaluated response as JSONP");
+          ok(resp, 'response was true-ish');
+          ok(resp && resp.c == "c", "evaluated response as JSONP");
         }
       });
       reqwest({
         url: '/tests/fixtures/fixtures_jsonp_multi.js?callback=reqwest_0',
         type: 'jsonp',
         success: function (resp) {
-          ok(resp.a == "a", "evaluated response as JSONP");
+          ok(resp, 'response was true-ish');
+          ok(resp && resp.a == "a", "evaluated response as JSONP");
         }
       });
     });

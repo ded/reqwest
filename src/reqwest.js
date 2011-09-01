@@ -6,7 +6,7 @@
     , contentType = 'Content-Type'
     , head = doc[byTag]('head')[0]
     , uniqid = 0
-    , lastValue // data stored by the most recent JSONP callback
+    , values = {} // data stored by the most recent JSONP callback
     , xhr = ('XMLHttpRequest' in win) ?
         function () {
           return new XMLHttpRequest()
@@ -61,34 +61,41 @@
   }
 
   // Store the data returned by the most recent callback
-  function generalCallback(data) {
-    lastValue = data
+  function generalCallback(url) {
+    return function(data) {
+      console.log(data);
+      values[url] = data;
+    }
   }
 
   function getRequest(o, fn, err) {
-    function onload() {
-      // Call the user callback with the last value stored
-      // and clean up values and scripts.
-      o.success && o.success(lastValue)
-      lastValue = undefined
-      head.removeChild(script);
+    function onload(url) {
+      return function() {
+        // Call the user callback with the last value stored
+        // and clean up values and scripts.
+        o.success && o.success(values[url])
+        head.removeChild(this);
+      }
     }
     if (o.type == 'jsonp') {
-      var script = doc.createElement('script')
-
-      // Add the global callback
-      win[getCallbackName(o)] = generalCallback;
+      var script = doc.createElement('script'),
+          cbName = getCallbackName(o)
 
       // Setup our script element
       script.type = 'text/javascript'
       script.src = o.url
       script.async = true
 
-      script.onload = onload
+      // Add the global callback
+      win[cbName] = generalCallback(o.url);
+
+      script.onload = onload(o.url)
       // onload for IE
-      script.onreadystatechange = function () {
-        /^loaded|complete$/.test(script.readyState) && onload()
-      }
+      script.onreadystatechange = (function(url) {
+          return function () {
+              (/^loaded|complete$/.test(this.readyState)) && onload(url).apply(this)
+          }
+      })(o.url);
 
       // Add the script to the DOM head
       head.appendChild(script)
