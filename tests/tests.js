@@ -4,7 +4,8 @@ sink('Mime types', function (test, ok) {
       url: '/tests/fixtures/fixtures.json',
       type: 'json',
       success: function (resp) {
-        ok(resp.boosh == 'boosh', 'evaluated response as JSON');
+        ok(resp.boosh == 'boosh',
+           'evaluated response as JSON');
       }
     });
   });
@@ -16,7 +17,9 @@ sink('Mime types', function (test, ok) {
       url: '/tests/fixtures/fixtures_jsonp.js?callback=?',
       type: 'jsonp',
       success: function (resp) {
-        ok(resp.boosh == "boosh", "evaluated response as JSONP");
+        ok(resp, 'response was true-ish');
+        ok(resp && resp.boosh == "boosh",
+           "evaluated response as JSONP");
       }
     });
 
@@ -25,7 +28,9 @@ sink('Mime types', function (test, ok) {
       type: 'jsonp',
       jsonpCallback: 'foo',
       success: function (resp) {
-        ok(resp.boosh == "boosh", "evaluated response as JSONP with custom callback");
+        ok(resp, 'response was true-ish');
+        ok(resp && resp.boosh == "boosh",
+           "evaluated response as JSONP with custom callback");
       }
     });
 
@@ -34,7 +39,9 @@ sink('Mime types', function (test, ok) {
       type: 'jsonp',
       jsonpCallback: 'foo',
       success: function (resp) {
-        ok(resp.boosh == "boosh", "evaluated response as JSONP with custom wildcard callback");
+        ok(resp, 'response was true-ish');
+        ok(resp && resp.boosh == "boosh",
+           "evaluated response as JSONP with custom wildcard callback");
       }
     });
   });
@@ -54,7 +61,7 @@ sink('Mime types', function (test, ok) {
       url: '/tests/fixtures/fixtures.html',
       type: 'html',
       success: function (resp) {
-        ok(resp == '<p>boosh</p>', 'evaluated response as HTML');
+        resp && ok(resp == '<p>boosh</p>', 'evaluated response as HTML');
       }
     });
   });
@@ -156,28 +163,32 @@ sink('Connection Object', function (test, ok) {
         url: '/tests/fixtures/fixtures_jsonp_multi.js?callback=reqwest_0',
         type: 'jsonp',
         success: function (resp) {
-          ok(resp.a == "a", "evaluated response as JSONP");
+          ok(resp, 'response was true-ish');
+          ok(resp && resp.a == "a", "evaluated response as JSONP");
         }
       });
       reqwest({
         url: '/tests/fixtures/fixtures_jsonp_multi_b.js?callback=reqwest_0',
         type: 'jsonp',
         success: function (resp) {
-          ok(resp.b == "b", "evaluated response as JSONP");
+          ok(resp, 'response was true-ish');
+          ok(resp && resp.b == "b", "evaluated response as JSONP");
         }
       });
       reqwest({
         url: '/tests/fixtures/fixtures_jsonp_multi_c.js?callback=reqwest_0',
         type: 'jsonp',
         success: function (resp) {
-          ok(resp.c == "c", "evaluated response as JSONP");
+          ok(resp, 'response was true-ish');
+          ok(resp && resp.c == "c", "evaluated response as JSONP");
         }
       });
       reqwest({
         url: '/tests/fixtures/fixtures_jsonp_multi.js?callback=reqwest_0',
         type: 'jsonp',
         success: function (resp) {
-          ok(resp.a == "a", "evaluated response as JSONP");
+          ok(resp, 'response was true-ish');
+          ok(resp && resp.a == "a", "evaluated response as JSONP");
         }
       });
     });
