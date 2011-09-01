@@ -84,10 +84,13 @@
       script.src = o.url
       script.async = true
 
-      script.onload = onload
-      // onload for IE
-      script.onreadystatechange = function () {
-        /^loaded|complete$/.test(script.readyState) && onload()
+      if (script.onload !== undefined) {
+          script.onload = onload
+      } else {
+          // onload for IE
+          script.onreadystatechange = function () {
+            /^loaded|complete$/.test(script.readyState) && onload()
+          }
       }
 
       // Add the script to the DOM head
