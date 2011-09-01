@@ -3,6 +3,7 @@
   var twoHundo = /^20\d$/
     , doc = document
     , byTag = 'getElementsByTagName'
+    , readyState = 'readyState'
     , contentType = 'Content-Type'
     , head = doc[byTag]('head')[0]
     , uniqid = 0
@@ -15,9 +16,9 @@
           return new ActiveXObject('Microsoft.XMLHTTP')
         }
 
-  function readyState(o, success, error) {
+  function handleReadyState(o, success, error) {
     return function () {
-      if (o && o.readyState == 4) {
+      if (o && o[readyState] == 4) {
         if (twoHundo.test(o.status)) {
           success(o)
         } else {
@@ -35,10 +36,7 @@
     if (!o.crossOrigin) {
       headers['X-Requested-With'] = headers['X-Requested-With'] || 'XMLHttpRequest'
     }
-
-    if (o.data) {
-      headers[contentType] = headers[contentType] || 'application/x-www-form-urlencoded'
-    }
+    headers[contentType] = headers[contentType] || 'application/x-www-form-urlencoded'
     for (var h in headers) {
       headers.hasOwnProperty(h) && http.setRequestHeader(h, headers[h], false)
     }
@@ -66,28 +64,29 @@
   }
 
   function getRequest(o, fn, err) {
-    function onload() {
-      // Call the user callback with the last value stored
-      // and clean up values and scripts.
-      o.success && o.success(lastValue)
-      lastValue = undefined
-      head.removeChild(script);
-    }
     if (o.type == 'jsonp') {
       var script = doc.createElement('script')
+        , loaded = 0
 
       // Add the global callback
-      win[getCallbackName(o)] = generalCallback;
+      win[getCallbackName(o)] = generalCallback
 
       // Setup our script element
       script.type = 'text/javascript'
       script.src = o.url
       script.async = true
 
-      script.onload = onload
-      // onload for IE
-      script.onreadystatechange = function () {
-        /^loaded|complete$/.test(script.readyState) && onload()
+      script.onload = script.onreadystatechange = function () {
+        if ((script[readyState] && script[readyState] !== "complete" && script[readyState] !== "loaded") || loaded) {
+          return false
+        }
+        script.onload = script.onreadystatechange = null
+        // Call the user callback with the last value stored
+        // and clean up values and scripts.
+        o.success && o.success(lastValue)
+        lastValue = undefined
+        head.removeChild(script)
+        loaded = 1
       }
 
       // Add the script to the DOM head
@@ -96,7 +95,7 @@
       var http = xhr()
       http.open(o.method || 'GET', typeof o == 'string' ? o : o.url, true)
       setHeaders(http, o)
-      http.onreadystatechange = readyState(http, fn, err)
+      http.onreadystatechange = handleReadyState(http, fn, err)
       o.before && o.before(http)
       http.send(o.data || null)
       return http
@@ -230,10 +229,10 @@
     var fields = [form[byTag]('input')
       , form[byTag]('select')
       , form[byTag]('textarea')]
-      , serialized = []
+      , serialized = [], i, j
 
-    for (var i = 0, l = fields.length; i < l; ++i) {
-      for (var j = 0, l2 = fields[i].length; j < l2; ++j) {
+    for (i = 0, l = fields.length; i < l; ++i) {
+      for (j = 0, l2 = fields[i].length; j < l2; ++j) {
         serialized.push(serial(fields[i][j]))
       }
     }
@@ -254,8 +253,6 @@
   }
 
   // defined as extern for Closure Compilation
-  if (typeof module !== 'undefined')
-  module.exports = reqwest
-  context['reqwest'] = reqwest
+  typeof module !== 'undefined' ? (module.exports = reqwest) : (context['reqwest'] = reqwest)
 
 }(this, window)
