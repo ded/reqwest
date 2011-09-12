@@ -136,24 +136,24 @@
   function init(o, fn) {
     this.url = typeof o == 'string' ? o : o.url
     this.timeout = null
-    var type = o.type || setType(this.url), self = this
+    var type = o.type || setType(this.url)
+      , self = this
     fn = fn || function () {}
 
     if (o.timeout) {
       this.timeout = setTimeout(function () {
         self.abort()
-        error()
       }, o.timeout)
     }
 
     function complete(resp) {
+      o.timeout && clearTimeout(self.timeout)
+      self.timeout = null
       o.complete && o.complete(resp)
     }
 
     function success(resp) {
-      o.timeout && clearTimeout(self.timeout) && (self.timeout = null)
       var r = resp.responseText
-
       if (r) {
         switch (type) {
         case 'json':
