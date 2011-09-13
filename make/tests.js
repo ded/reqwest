@@ -13,8 +13,7 @@ var routes = {
 
   '(([a-zA-Z0-9_\\-\\/]+)\\.(css|js|json|html)$)': function (req, res, m, file, ext) {
     res.writeHead(200, {'Content-Type': mime.lookup(ext)})
-    var asset = fs.readFileSync('./' + file + '.' + ext)
-    res.write(asset)
+    res.write(fs.readFileSync('./' + file + '.' + ext))
     res.end()
   }
 }

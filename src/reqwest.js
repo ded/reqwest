@@ -1,7 +1,14 @@
-!function (context, win) {
+!function (name, definition) {
+  if (typeof define == 'function') define(definition)
+  else if (typeof module != 'undefined') module.exports = definition()
+  else this[name] = definition()
+}('reqwest', function () {
 
-  var twoHundo = /^20\d$/
+  var context = this
+    , win = window
     , doc = document
+    , old = context.reqwest
+    , twoHundo = /^20\d$/
     , byTag = 'getElementsByTagName'
     , readyState = 'readyState'
     , contentType = 'Content-Type'
@@ -232,9 +239,7 @@
       , serialized = [], i, j
 
     for (i = 0, l = fields.length; i < l; ++i) {
-      for (j = 0, l2 = fields[i].length; j < l2; ++j) {
-        serialized.push(serial(fields[i][j]))
-      }
+      for (j = 0, l2 = fields[i].length; j < l2; ++j) serialized.push(serial(fields[i][j]))
     }
     return serialized.join('').replace(/&$/, '')
   }
@@ -246,13 +251,10 @@
     return r
   }
 
-  var old = context.reqwest
   reqwest.noConflict = function () {
     context.reqwest = old
     return this
   }
 
-  // defined as extern for Closure Compilation
-  if (typeof module !== 'undefined') module.exports = reqwest; else context['reqwest'] = reqwest
-
-}(this, window)
+  return reqwest
+})
