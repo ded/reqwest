@@ -4,6 +4,7 @@
   * https://github.com/ded/reqwest
   * license MIT
   */
+
 !function (name, definition) {
   if (typeof define == 'function') define(definition)
   else if (typeof module != 'undefined') module.exports = definition()
@@ -164,7 +165,11 @@
       if (r) {
         switch (type) {
         case 'json':
-          resp = win.JSON ? win.JSON.parse(r) : eval('(' + r + ')')
+          try {
+            resp = win.JSON ? win.JSON.parse(r) : eval('(' + r + ')')          
+          } catch(error) {
+            resp.error = 'Could not parse JSON in response'
+          }
           break;
         case 'js':
           resp = eval(r)
@@ -177,6 +182,7 @@
 
       fn(resp)
       o.success && o.success(resp)
+
       complete(resp)
     }
 

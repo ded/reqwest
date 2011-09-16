@@ -84,6 +84,16 @@
       })
     })
 
+    test('Invalid JSON sets error on resp object', 1, function() {
+      ajax({
+        url: '/tests/fixtures/invalidJSON.json',
+        type: 'json',
+        success: function (resp) {
+          ok(resp.error == 'Could not parse JSON in response', 'error callback fired')
+        }
+      })
+    })
+
   })
 
   sink('Connection Object', function (test, ok) {
