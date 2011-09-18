@@ -222,7 +222,7 @@
     n = enc(n)
     switch (el.tagName.toLowerCase()) {
     case 'input':
-      switch (el.type) {
+      switch (el.type.toLowerCase()) {
       // silly wabbit
       case 'reset':
       case 'button':
@@ -240,7 +240,7 @@
       return n + '=' + enc(el.value) + '&'
     case 'select':
       // @todo refactor beyond basic single selected value case
-      return n + '=' + enc(el.options[el.selectedIndex].value) + '&'
+      return n + '=' + enc(el.options[el.selectedIndex].value || el.options[el.selectedIndex].text) + '&'
     }
     return ''
   }
