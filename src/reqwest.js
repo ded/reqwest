@@ -84,7 +84,9 @@
       script.src = o.url
       script.async = true
       if (typeof script.onreadystatechange !== 'undefined') {
-          // for IE, but not for FF
+    	  // need this for IE due to out-of-order onreadystatechange(), binding script
+    	  // execution to an event listener gives us control over when the script
+    	  // is executed. See http://jaubourg.net/2010/07/loading-script-as-onclick-handler-of.html
           script.event = 'onclick'
           script.htmlFor = script.id = '_reqwest_' + reqId
       }
