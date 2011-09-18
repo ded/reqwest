@@ -89,7 +89,10 @@
         url: '/tests/fixtures/invalidJSON.json',
         type: 'json',
         success: function (resp) {
-          ok(resp.error == 'Could not parse JSON in response', 'error callback fired')
+          ok(false, 'success callback fired')
+        },
+        error: function(resp, msg) {
+          ok(msg == 'Could not parse JSON in response', 'error callback fired')
         }
       })
     })
@@ -121,7 +124,12 @@
           ok(http.readyState == 1, 'received http connection object')
         },
         success: function () {
-          ok(connection.request.readyState == 4, 'success callback has readyState of 4')
+          // Microsoft.XMLHTTP appears not to run this async in IE6&7, it processes the request and
+          // triggers success() before ajax() even returns. Perhaps a better solution would be to
+          // defer the calls within handleReadyState().
+          setTimeout(function() {
+            ok(connection.request.readyState == 4, 'success callback has readyState of 4')
+          }, 0)
         }
       })
     })
@@ -146,7 +154,7 @@
         var result = ajax.serializeArray(document.forms[0]);
 
         for (var i = 0; i < expected.length; i++) {
-          ok(result.some(function (v) {
+          ok(v.some(result, function (v) {
             return v.name == expected[i].name && v.value == expected[i].value
           }), 'serialized ' + result[i].name)
         }

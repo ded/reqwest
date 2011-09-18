@@ -46,15 +46,15 @@
     }
     headers[contentType] = headers[contentType] || 'application/x-www-form-urlencoded'
     for (var h in headers) {
-      headers.hasOwnProperty(h) && http.setRequestHeader(h, headers[h], false)
+      headers.hasOwnProperty(h) && http.setRequestHeader(h, headers[h])
     }
   }
 
-  function getCallbackName(o) {
+  function getCallbackName(o, reqId) {
     var callbackVar = o.jsonpCallback || "callback"
     if (o.url.slice(-(callbackVar.length + 2)) == (callbackVar + "=?")) {
       // Generate a guaranteed unique callback name
-      var callbackName = "reqwest_" + uniqid++
+      var callbackName = "reqwest_" + reqId
 
       // Replace the ? in the URL with the generated name
       o.url = o.url.substr(0, o.url.length - 1) + callbackName
@@ -74,21 +74,27 @@
   function getRequest(o, fn, err) {
     if (o.type == 'jsonp') {
       var script = doc.createElement('script')
-        , loaded = 0
+        , loaded = 0, reqId = uniqid++
 
       // Add the global callback
-      win[getCallbackName(o)] = generalCallback
+      win[getCallbackName(o, reqId)] = generalCallback
 
       // Setup our script element
       script.type = 'text/javascript'
       script.src = o.url
       script.async = true
+      if (typeof script.onreadystatechange !== 'undefined') {
+          // for IE, but not for FF
+          script.event = 'onclick'
+          script.htmlFor = script.id = '_reqwest_' + reqId
+      }
 
       script.onload = script.onreadystatechange = function () {
         if ((script[readyState] && script[readyState] !== "complete" && script[readyState] !== "loaded") || loaded) {
           return false
         }
         script.onload = script.onreadystatechange = null
+        script.onclick && script.onclick()
         // Call the user callback with the last value stored
         // and clean up values and scripts.
         o.success && o.success(lastValue)
@@ -154,6 +160,11 @@
       o.complete && o.complete(resp)
     }
 
+    function error(resp, msg, t) {
+      o.error && o.error(resp, msg, t)
+      complete(resp)
+    }
+
     function success(resp) {
       var r = resp.responseText
       if (r) {
@@ -161,8 +172,9 @@
         case 'json':
           try {
             resp = win.JSON ? win.JSON.parse(r) : eval('(' + r + ')')          
-          } catch(error) {
-            resp.error = 'Could not parse JSON in response'
+          } catch(err) {
+            error(resp, 'Could not parse JSON in response', err);
+            return;
           }
           break;
         case 'js':
@@ -177,11 +189,6 @@
       fn(resp)
       o.success && o.success(resp)
 
-      complete(resp)
-    }
-
-    function error(resp) {
-      o.error && o.error(resp)
       complete(resp)
     }
 
