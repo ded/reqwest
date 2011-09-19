@@ -74,7 +74,8 @@
   function getRequest(o, fn, err) {
     if (o.type == 'jsonp') {
       var script = doc.createElement('script')
-        , loaded = 0, reqId = uniqid++
+        , loaded = 0
+        , reqId = uniqid++
 
       // Add the global callback
       win[getCallbackName(o, reqId)] = generalCallback
