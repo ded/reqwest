@@ -162,11 +162,6 @@
       o.complete && o.complete(resp)
     }
 
-    function error(resp, msg, t) {
-      o.error && o.error(resp, msg, t)
-      complete(resp)
-    }
-
     function success(resp) {
       var r = resp.responseText
       if (r) {
@@ -175,8 +170,7 @@
           try {
             resp = win.JSON ? win.JSON.parse(r) : eval('(' + r + ')')          
           } catch(err) {
-            error(resp, 'Could not parse JSON in response', err);
-            return;
+            return error(resp, 'Could not parse JSON in response', err)
           }
           break;
         case 'js':
@@ -191,6 +185,11 @@
       fn(resp)
       o.success && o.success(resp)
 
+      complete(resp)
+    }
+
+    function error(resp, msg, t) {
+      o.error && o.error(resp, msg, t)
       complete(resp)
     }
 
