@@ -18,7 +18,7 @@ var routes = {
   }
 }
 
-Connect.createServer(dispatch(routes)).listen(1234, '127.0.0.1')
+Connect.createServer(dispatch(routes)).listen(1234)
 
 exec('open http://localhost:1234', function () {
   console.log('opening tests at http://localhost:1234')
