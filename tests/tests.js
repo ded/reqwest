@@ -457,4 +457,4 @@
 
   start()
 
-}(reqwest)
+}(reqwest.noConflict())
