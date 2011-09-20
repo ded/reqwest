@@ -2,7 +2,8 @@
   var r = require('reqwest')
     , integrate = function(method) {
       return function() {
-        return r[method].apply(null, this)
+        var args = arguments.length > 0 ? arguments : this
+        return r[method].apply(null, args)
       }
     };
 
@@ -14,8 +15,5 @@
     , serializeArray: integrate('serializeArray')
     , serializeHash: sh
     , serializeObject: sh
-    , val: function () {
-        return r.val(this[0])
-      }
   }, true)
 }(ender);
