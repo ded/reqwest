@@ -221,49 +221,38 @@
   }
 
   function serial(el, cb) {
-    var ret = null
-      , n = el.name
+    var n = el.name
       , t = el.tagName.toLowerCase()
-      , submittable = true // define simply for readability
-      , optCb = function(o) { cb(n, normalize(o.value || o.text), submittable) }
 
-    // create a new callback if we don't have one, use this to build a return value
-    cb = cb || function(n, v) {
-      ret = ret ? (isArray(ret) && ret.push(v) ? ret : [ ret, v ]) : v
-    }
-
-    // don't serialize elements that are disabled or without a name allow 'option'
-    // to pass through, it should only get here via val()
-    if (el.disabled || (!n && t != 'option')) return null
+    // don't serialize elements that are disabled or without a name
+    if (el.disabled || !n) return
 
     switch (t) {
     case 'input':
       if (!/reset|button|image|file/i.test(el.type)) {
         var ch = /checkbox/i.test(el.type)
           , ra = /radio/i.test(el.type)
-          , val = el.value
+          , val = el.value;
         // WebKit gives us "" instead of "on if a checkbox has no value, so correct it here
-        cb(n, normalize(ch && val === '' ? 'on' : val), ch || ra ? el.checked : submittable)
+        (!(ch || ra) || el.checked) && cb(n, normalize(ch && val === '' ? 'on' : val))
       }
       break;
     case 'textarea':
-      cb(n, normalize(el.value), submittable)
+      cb(n, normalize(el.value))
       break;
     case 'select':
       if (el.type.toLowerCase() === 'select-one') {
         var o = el.selectedIndex >= 0 ? el.options[el.selectedIndex] : null
-        o && !o.disabled ? optCb(o) : cb(n, null, !submittable)
+        o && !o.disabled && cb(n, normalize(o.value || o.text))
       } else {
         for (var i = 0; el.length && i < el.length; i++) {
-          var opt = el.options[i]
-          opt.selected && !opt.disabled && optCb(opt)
+          var o = el.options[i]
+          o.selected && !o.disabled && cb(n, normalize(o.value || o.text))
         }
       }
       break;
-    case 'option':
-      optCb(el)
     }
-    return ret
+    return
   }
 
   // collect up all form elements found from the passed argument elements all
@@ -288,8 +277,8 @@
   // query string style serialization
   reqwest.serialize = function () {
     var qs = ''
-    eachFormElement.apply(function(name, value, submittable) {
-      submittable && (qs += name + '=' + encodeURIComponent(value) + '&')
+    eachFormElement.apply(function(name, value) {
+      qs += name + '=' + encodeURIComponent(value) + '&'
     }, arguments)
     // spaces should be + according to spec
     return qs.replace(/&$/, '').replace(/%20/g,'+')
@@ -298,8 +287,8 @@
   // [ { name: 'name', value: 'value' }, ... ] style serialization
   reqwest.serializeArray = function () {
     var arr = []
-    eachFormElement.apply(function(name, value, submittable) {
-      submittable && arr.push({name: name, value: value})
+    eachFormElement.apply(function(name, value) {
+      arr.push({name: name, value: value})
     }, arguments)
     return arr 
   }
@@ -307,18 +296,13 @@
   // { 'name': 'value', ... } style serialization
   reqwest.serializeHash = function (form) {
     var hash = {}
-    eachFormElement.apply(function(name, value, submittable) {
-      if (!submittable) return;
+    eachFormElement.apply(function(name, value) {
       if (name in hash) {
         hash[name] && !isArray(hash[name]) && (hash[name] = [hash[name]])
         hash[name].push(value)
       } else hash[name] = value
     }, arguments)
     return hash
-  }
-
-  reqwest.val = function(e) {
-    return serial(e)
   }
 
   reqwest.noConflict = function () {

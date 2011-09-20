@@ -143,7 +143,6 @@
        *    style serialization, compatible with jQuery.serializeArray()
        *  * reqwest.serializeArray(ele[, ele...]) returns a { 'name': 'value', ... } style
        *    serialization, compatible with Prototype Form.serializeElements({hash:true})
-       *  * reqwest.val(ele) returns the current 'value' of the element
        * Some tests based on spec notes here: http://malsup.com/jquery/form/comp/test.html
        */
       test('serialize', 1, function () {
@@ -206,10 +205,9 @@
       form = document.forms[1]
       form.reset()
 
-      test('serialize textarea', 6, function() {
+      test('serialize textarea', 5, function() {
         textarea = form.getElementsByTagName('textarea')[0]
         // the texarea has 2 different newline styles, should come out as normalized CRLF as per forms spec
-        ok("?\r\nA B\r\nZ" == ajax.val(textarea), "val(textarea)")
         ok("T3=%3F%0D%0AA+B%0D%0AZ" == ajax.serialize(textarea), "serialize(textarea)")
         var sa = ajax.serializeArray(textarea)
         ok(sa.length == 1, "serializeArray(textarea) returns array")
@@ -222,15 +220,6 @@
       function isArray(a) { return Object.prototype.toString.call(a) == '[object Array]' }
 
       function verifyInput(input, name, value, str) {
-        verifyInputVal(input, value, str)
-        verifyInputSerialize(input, name, value, str)
-      }
-
-      function verifyInputVal(input, value, str) {
-        ok(sameValue(ajax.val(input), value), "val(" + str + ")")
-      }
-
-      function verifyInputSerialize(input, name, value, str) {
         var sa = ajax.serializeArray(input)
         var sh = ajax.serializeHash(input)
 
@@ -251,70 +240,66 @@
         }
       }
 
-      test('serialize input[type=hidden]', 5 + 5, function() {
+      test('serialize input[type=hidden]', 4 + 4, function() {
           verifyInput(form.getElementsByTagName('input')[0], "H1", "x", "hidden")
           verifyInput(form.getElementsByTagName('input')[1], "H2", "", "hidden[no value]")
       });
 
-      test('serialize input[type=password]', 5 + 5, function() {
+      test('serialize input[type=password]', 4 + 4, function() {
         verifyInput(form.getElementsByTagName('input')[2], "PWD1", "xyz", "password")
         verifyInput(form.getElementsByTagName('input')[3], "PWD2", "", "password[no value]")
       });
 
-      test('serialize input[type=text]', 5 + 5 + 5, function() {
+      test('serialize input[type=text]', 4 + 4 + 4, function() {
         verifyInput(form.getElementsByTagName('input')[4], "T1", "", "text[no value]")
         verifyInput(form.getElementsByTagName('input')[5], "T2", "YES", "text[readonly]")
         verifyInput(form.getElementsByTagName('input')[10], "My Name", "me", "text[space name]")
       });
       
-      test('serialize input[type=checkbox]', 1 + 2 + 3 + 2 + 3 + 3, function() {
+      test('serialize input[type=checkbox]', 2 + 4 + 2 + 4, function() {
         var cb1 = form.getElementsByTagName('input')[6]
           , cb2 = form.getElementsByTagName('input')[7]
-        verifyInputVal(cb1, "1", "checkbox")
-        verifyInputSerialize(cb1, "C1", null, "checkbox[not checked]")
+        verifyInput(cb1, "C1", null, "checkbox[not checked]")
         cb1.checked = true
-        verifyInputSerialize(cb1, "C1", "1", "checkbox[checked]")
+        verifyInput(cb1, "C1", "1", "checkbox[checked]")
         // special case here, checkbox with no value="" should give you "on" for cb.value
-        verifyInputVal(cb2, "on", "checkbox[no value]")
-        verifyInputSerialize(cb2, "C2", null, "checkbox[no value, not checked]")
+        verifyInput(cb2, "C2", null, "checkbox[no value, not checked]")
         cb2.checked = true
-        verifyInputSerialize(cb2, "C2", "on", "checkbox[no value, checked]")
+        verifyInput(cb2, "C2", "on", "checkbox[no value, checked]")
       });
       
-      test('serialize input[type=radio]', 1 + 2 + 3 + 2 + 3 + 3, function() {
+      test('serialize input[type=radio]', 2 + 4 + 2 + 4, function() {
         var r1 = form.getElementsByTagName('input')[8]
           , r2 = form.getElementsByTagName('input')[9]
-        verifyInputVal(r1, "1", "radio")
-        verifyInputSerialize(r1, "R1", null, "radio[not checked]")
+        verifyInput(r1, "R1", null, "radio[not checked]")
         r1.checked = true
-        verifyInputSerialize(r1, "R1", "1", "radio[not checked]")
-        verifyInputVal(r2, "", "radio[no value]")
-        verifyInputSerialize(r2, "R1", null, "radio[no value, not checked]")
+        verifyInput(r1, "R1", "1", "radio[not checked]")
+        verifyInput(r2, "R1", null, "radio[no value, not checked]")
         r2.checked = true
-        verifyInputSerialize(r2, "R1", "", "radio[no value, checked]")
+        verifyInput(r2, "R1", "", "radio[no value, checked]")
       });
 
-      test('serialize input[type=reset]', 3, function() {
+      test('serialize input[type=reset]', 2, function() {
         verifyInput(form.getElementsByTagName('input')[11], "rst", null, "reset")
       });
 
-      test('serialize input[type=file]', 3, function() {
+      test('serialize input[type=file]', 2, function() {
         verifyInput(form.getElementsByTagName('input')[12], "file", null, "file")
       });
 
-      test('serialize input[type=submit]', 5, function() {
+      test('serialize input[type=submit]', 4, function() {
         // we're only supposed to serialize a submit button if it was clicked to perform this
         // serialization: http://www.w3.org/TR/html401/interact/forms.html#h-17.13.2
         // but we'll pretend to be oblivious to this part of the spec...
         verifyInput(form.getElementsByTagName('input')[13], "sub", "NO", "submit")
       });
 
-      test('serialize select with no options', 3, function() {
+      test('serialize select with no options', 2, function() {
         var select = form.getElementsByTagName('select')[0]
         verifyInput(select, "S1", null, "select, no options")
       });
 
-      test('serialize select with values', 5 + 5 + 5 + 3, function() {
+      test('serialize select with values', 4 + 4 + 4 + 2, function() {
         var select = form.getElementsByTagName('select')[1]
         verifyInput(select, "S2", "abc", "select option 1 (default)")
         select.selectedIndex = 1
@@ -325,7 +310,7 @@
         verifyInput(select, "S2", null, "select, unselected")
       });
 
-      test('serialize select without explicit values', 5 + 5 + 5 + 3, function() {
+      test('serialize select without explicit values', 4 + 4 + 4 + 2, function() {
         var select = form.getElementsByTagName('select')[2]
         verifyInput(select, "S3", "ABC", "select option 1 (default)")
         select.selectedIndex = 1
@@ -336,7 +321,7 @@
         verifyInput(select, "S3", null, "select, unselected")
       });
 
-      test('serialize select multiple', 3 + 5 + 7 + 9 + 7 + 3, function() {
+      test('serialize select multiple', 2 + 4 + 6 + 8 + 6 + 2, function() {
         var select = form.getElementsByTagName('select')[3]
         verifyInput(select, "S4", null, "select, unselected (default)")
         select.options[1].selected = true
@@ -352,38 +337,28 @@
         verifyInput(select, "S4", null, "select, all unselected")
        });
 
-      test('serialize options', 3 + 3, function() {
+      test('serialize options', 2 + 2, function() {
         var option = form.getElementsByTagName('select')[1].options[6]
-        verifyInputVal(option, "disco stu", "option with value")
-        verifyInputSerialize(option, "-", null, "just option (with value), shouldn't serialize")
+        verifyInput(option, "-", null, "just option (with value), shouldn't serialize")
         var option = form.getElementsByTagName('select')[2].options[6]
-        verifyInputVal(option, "DISCO STU!", "option without value")
-        verifyInputSerialize(option, "-", null, "option (without value), shouldn't serialize")
+        verifyInput(option, "-", null, "option (without value), shouldn't serialize")
       });
 
-      // perhaps disabled inputs should still return their val()? currently they don't
-      test('serialize disabled', 3 + 3 + 3 + 3 + 3 + 3 + 3, function() {
+      test('serialize disabled', 2 + 2 + 2 + 2 + 2 + 2 + 2, function() {
         var input = form.getElementsByTagName('input')[14]
-        verifyInputVal(input, null, "disabled text input")
-        verifyInputSerialize(input, "D1", null, "disabled text input")
+        verifyInput(input, "D1", null, "disabled text input")
         input = form.getElementsByTagName('input')[15]
-        verifyInputVal(input, null, "disabled checkbox")
-        verifyInputSerialize(input, "D2", null, "disabled checkbox")
+        verifyInput(input, "D2", null, "disabled checkbox")
         input = form.getElementsByTagName('input')[16]
-        verifyInputVal(input, null, "disabled radio")
-        verifyInputSerialize(input, "D3", null, "disabled radio")
+        verifyInput(input, "D3", null, "disabled radio")
         var select = form.getElementsByTagName('select')[4]
-        verifyInputVal(select, null, "disabled select")
-        verifyInputSerialize(select, "D4", null, "disabled select")
+        verifyInput(select, "D4", null, "disabled select")
         select = form.getElementsByTagName('select')[3]
-        verifyInputVal(select, null, "disabled select option")
-        verifyInputSerialize(select, "D5", null, "disabled select option")
+        verifyInput(select, "D5", null, "disabled select option")
         select = form.getElementsByTagName('select')[6]
-        verifyInputVal(select, null, "disabled multi select")
-        verifyInputSerialize(select, "D6", null, "disabled multi select")
+        verifyInput(select, "D6", null, "disabled multi select")
         select = form.getElementsByTagName('select')[7]
-        verifyInputVal(select, null, "disabled multi select option")
-        verifyInputSerialize(select, "D7", null, "disabled multi select option")
+        verifyInput(select, "D7", null, "disabled multi select option")
       });
 
       var foo = document.forms[0].getElementsByTagName('input')[1]
