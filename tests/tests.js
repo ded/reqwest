@@ -89,7 +89,10 @@
         url: '/tests/fixtures/invalidJSON.json',
         type: 'json',
         success: function (resp) {
-          ok(resp.error == 'Could not parse JSON in response', 'error callback fired')
+          ok(false, 'success callback fired')
+        },
+        error: function(resp, msg) {
+          ok(msg == 'Could not parse JSON in response', 'error callback fired')
         }
       })
     })
@@ -121,37 +124,297 @@
           ok(http.readyState == 1, 'received http connection object')
         },
         success: function () {
-          ok(connection.request.readyState == 4, 'success callback has readyState of 4')
+          // Microsoft.XMLHTTP appears not to run this async in IE6&7, it processes the request and
+          // triggers success() before ajax() even returns. Perhaps a better solution would be to
+          // defer the calls within handleReadyState().
+          setTimeout(function() {
+            ok(connection.request.readyState == 4, 'success callback has readyState of 4')
+          }, 0)
         }
       })
     })
 
     sink('Serializing', function (test, ok) {
 
+      /*
+       * Serialize forms according to spec.
+       *  * reqwest.serialize(ele[, ele...]) returns a query string style serialization
+       *  * reqwest.serializeArray(ele[, ele...]) returns a [ { name: 'name', value: 'value'}, ... ]
+       *    style serialization, compatible with jQuery.serializeArray()
+       *  * reqwest.serializeArray(ele[, ele...]) returns a { 'name': 'value', ... } style
+       *    serialization, compatible with Prototype Form.serializeElements({hash:true})
+       *  * reqwest.val(ele) returns the current 'value' of the element
+       * Some tests based on spec notes here: http://malsup.com/jquery/form/comp/test.html
+       */
       test('serialize', 1, function () {
-        var expected = 'foo=bar&bar=baz&wha=1&wha=3&choices=two&opinions=world%20peace%20is%20not%20real';
+        var expected = 'foo=bar&bar=baz&wha=1&wha=3&who=tawoo&choices=two&opinions=world+peace+is+not+real';
         ok(ajax.serialize(document.forms[0]) == expected, 'serialized form')
       })
 
-      test('serializeArray', 6, function () {
+      test('serializeArray', 7, function () {
         var expected = [
           { name: 'foo', value: 'bar' },
           { name: 'bar', value: 'baz' },
           { name: 'wha', value: 1 },
           { name: 'wha', value: 3 },
+          { name: 'who', value: 'tawoo' },
           { name: 'choices', value: 'two' },
-          { name: 'opinions', value: 'world%20peace%20is%20not%20real' }
+          { name: 'opinions', value: 'world peace is not real' }
         ]
 
         var result = ajax.serializeArray(document.forms[0]);
 
         for (var i = 0; i < expected.length; i++) {
-          ok(result.some(function (v) {
+          ok(v.some(result, function (v) {
             return v.name == expected[i].name && v.value == expected[i].value
           }), 'serialized ' + result[i].name)
         }
       });
 
+      function sameValue(value, expected) {
+        if (expected == null) {
+          return value === null
+        } else if (isArray(expected)) {
+          if (value.length !== expected.length) return false
+          for (var i = 0; i < expected.length; i++) {
+            if (value[i] != expected[i]) return false
+          }
+          return true
+        } else return value == expected
+      }
+
+      test('serializeHash', 7, function () {
+        var expected = {
+          foo: 'bar',
+          bar: 'baz',
+          wha: [ "1", "3" ],
+          who: 'tawoo',
+          choices: 'two',
+          opinions: 'world peace is not real'
+        }
+
+        var result = ajax.serializeHash(document.forms[0]);
+
+        ok(v.keys(expected).length === v.keys(result).length, "same number of keys")
+
+        v.each(v.keys(expected), function (k) {
+          ok(sameValue(expected[k], result[k]), "same value for " + k)
+        })
+
+      });
+
+      form = document.forms[1]
+      form.reset()
+
+      test('serialize textarea', 6, function() {
+        textarea = form.getElementsByTagName('textarea')[0]
+        // the texarea has 2 different newline styles, should come out as normalized CRLF as per forms spec
+        ok("?\r\nA B\r\nZ" == ajax.val(textarea), "val(textarea)")
+        ok("T3=%3F%0D%0AA+B%0D%0AZ" == ajax.serialize(textarea), "serialize(textarea)")
+        var sa = ajax.serializeArray(textarea)
+        ok(sa.length == 1, "serializeArray(textarea) returns array")
+        sa = sa[0]
+        ok("T3" == sa.name, "serializeArray(textarea).name")
+        ok("?\r\nA B\r\nZ" == sa.value, "serializeArray(textarea).value")
+        ok("?\r\nA B\r\nZ" == ajax.serializeHash(textarea).T3, "serializeHash(textarea)")
+      });
+
+      function isArray(a) { return Object.prototype.toString.call(a) == '[object Array]' }
+
+      function verifyInput(input, name, value, str) {
+        verifyInputVal(input, value, str)
+        verifyInputSerialize(input, name, value, str)
+      }
+
+      function verifyInputVal(input, value, str) {
+        ok(sameValue(ajax.val(input), value), "val(" + str + ")")
+      }
+
+      function verifyInputSerialize(input, name, value, str) {
+        var sa = ajax.serializeArray(input)
+        var sh = ajax.serializeHash(input)
+
+        if (value != null) {
+          var av = isArray(value) ? value : [ value ]
+          ok(sa.length == av.length, "serializeArray(" + str + ") returns array [{name,value}]")
+          for (var i = 0; i < av.length; i++) {
+            ok(name == sa[i].name, "serializeArray(" + str + ")[" + i + "].name")
+            ok(av[i] == sa[i].value, "serializeArray(" + str + ")[" + i + "].value")
+          }
+
+          ok(sameValue(sh[name], value), "serializeHash(" + str + ")")
+        } else {
+          // the cases where an element shouldn't show up at all, checkbox not checked for example
+          ok(sa.length == 0, "serializeArray(" + str + ") is []")
+
+          ok(v.keys(sh).length == 0, "serializeHash(" + str + ") is {}")
+        }
+      }
+
+      test('serialize input[type=hidden]', 5 + 5, function() {
+          verifyInput(form.getElementsByTagName('input')[0], "H1", "x", "hidden")
+          verifyInput(form.getElementsByTagName('input')[1], "H2", "", "hidden[no value]")
+      });
+
+      test('serialize input[type=password]', 5 + 5, function() {
+        verifyInput(form.getElementsByTagName('input')[2], "PWD1", "xyz", "password")
+        verifyInput(form.getElementsByTagName('input')[3], "PWD2", "", "password[no value]")
+      });
+
+      test('serialize input[type=text]', 5 + 5 + 5, function() {
+        verifyInput(form.getElementsByTagName('input')[4], "T1", "", "text[no value]")
+        verifyInput(form.getElementsByTagName('input')[5], "T2", "YES", "text[readonly]")
+        verifyInput(form.getElementsByTagName('input')[10], "My Name", "me", "text[space name]")
+      });
+      
+      test('serialize input[type=checkbox]', 1 + 2 + 3 + 2 + 3 + 3, function() {
+        var cb1 = form.getElementsByTagName('input')[6]
+          , cb2 = form.getElementsByTagName('input')[7]
+        verifyInputVal(cb1, "1", "checkbox")
+        verifyInputSerialize(cb1, "C1", null, "checkbox[not checked]")
+        cb1.checked = true
+        verifyInputSerialize(cb1, "C1", "1", "checkbox[checked]")
+        // special case here, checkbox with no value="" should give you "on" for cb.value
+        verifyInputVal(cb2, "on", "checkbox[no value]")
+        verifyInputSerialize(cb2, "C2", null, "checkbox[no value, not checked]")
+        cb2.checked = true
+        verifyInputSerialize(cb2, "C2", "on", "checkbox[no value, checked]")
+      });
+      
+      test('serialize input[type=radio]', 1 + 2 + 3 + 2 + 3 + 3, function() {
+        var r1 = form.getElementsByTagName('input')[8]
+          , r2 = form.getElementsByTagName('input')[9]
+        verifyInputVal(r1, "1", "radio")
+        verifyInputSerialize(r1, "R1", null, "radio[not checked]")
+        r1.checked = true
+        verifyInputSerialize(r1, "R1", "1", "radio[not checked]")
+        verifyInputVal(r2, "", "radio[no value]")
+        verifyInputSerialize(r2, "R1", null, "radio[no value, not checked]")
+        r2.checked = true
+        verifyInputSerialize(r2, "R1", "", "radio[no value, checked]")
+      });
+
+      test('serialize input[type=reset]', 3, function() {
+        verifyInput(form.getElementsByTagName('input')[11], "rst", null, "reset")
+      });
+
+      test('serialize input[type=file]', 3, function() {
+        verifyInput(form.getElementsByTagName('input')[12], "file", null, "file")
+      });
+
+      test('serialize input[type=submit]', 5, function() {
+        // we're only supposed to serialize a submit button if it was clicked to perform this
+        // serialization: http://www.w3.org/TR/html401/interact/forms.html#h-17.13.2
+        // but we'll pretend to be oblivious to this part of the spec...
+        verifyInput(form.getElementsByTagName('input')[13], "sub", "NO", "submit")
+      });
+
+      test('serialize select with no options', 3, function() {
+        var select = form.getElementsByTagName('select')[0]
+        verifyInput(select, "S1", null, "select, no options")
+      });
+
+      test('serialize select with values', 5 + 5 + 5 + 3, function() {
+        var select = form.getElementsByTagName('select')[1]
+        verifyInput(select, "S2", "abc", "select option 1 (default)")
+        select.selectedIndex = 1
+        verifyInput(select, "S2", "def", "select option 2")
+        select.selectedIndex = 6
+        verifyInput(select, "S2", "disco stu", "select option 7")
+        select.selectedIndex = -1
+        verifyInput(select, "S2", null, "select, unselected")
+      });
+
+      test('serialize select without explicit values', 5 + 5 + 5 + 3, function() {
+        var select = form.getElementsByTagName('select')[2]
+        verifyInput(select, "S3", "ABC", "select option 1 (default)")
+        select.selectedIndex = 1
+        verifyInput(select, "S3", "DEF", "select option 2")
+        select.selectedIndex = 6
+        verifyInput(select, "S3", "DISCO STU!", "select option 7")
+        select.selectedIndex = -1
+        verifyInput(select, "S3", null, "select, unselected")
+      });
+
+      test('serialize select multiple', 3 + 5 + 7 + 9 + 7 + 3, function() {
+        var select = form.getElementsByTagName('select')[3]
+        verifyInput(select, "S4", null, "select, unselected (default)")
+        select.options[1].selected = true
+        verifyInput(select, "S4", "2", "select option 2")
+        select.options[3].selected = true
+        verifyInput(select, "S4", [ "2", "4" ], "select options 2 & 4")
+        select.options[8].selected = true
+        verifyInput(select, "S4", [ "2", "4", "Disco Stu!" ], "select option 2 & 4 & 9")
+        select.options[3].selected = false
+        verifyInput(select, "S4", [ "2", "Disco Stu!" ], "select option 2 & 9")
+        select.options[1].selected = false
+        select.options[8].selected = false
+        verifyInput(select, "S4", null, "select, all unselected")
+       });
+
+      test('serialize options', 3 + 3, function() {
+        var option = form.getElementsByTagName('select')[1].options[6]
+        verifyInputVal(option, "disco stu", "option with value")
+        verifyInputSerialize(option, "-", null, "just option (with value), shouldn't serialize")
+        var option = form.getElementsByTagName('select')[2].options[6]
+        verifyInputVal(option, "DISCO STU!", "option without value")
+        verifyInputSerialize(option, "-", null, "option (without value), shouldn't serialize")
+      });
+
+      // perhaps disabled inputs should still return their val()? currently they don't
+      test('serialize disabled', 3 + 3 + 3 + 3 + 3 + 3 + 3, function() {
+        var input = form.getElementsByTagName('input')[14]
+        verifyInputVal(input, null, "disabled text input")
+        verifyInputSerialize(input, "D1", null, "disabled text input")
+        input = form.getElementsByTagName('input')[15]
+        verifyInputVal(input, null, "disabled checkbox")
+        verifyInputSerialize(input, "D2", null, "disabled checkbox")
+        input = form.getElementsByTagName('input')[16]
+        verifyInputVal(input, null, "disabled radio")
+        verifyInputSerialize(input, "D3", null, "disabled radio")
+        var select = form.getElementsByTagName('select')[4]
+        verifyInputVal(select, null, "disabled select")
+        verifyInputSerialize(select, "D4", null, "disabled select")
+        select = form.getElementsByTagName('select')[3]
+        verifyInputVal(select, null, "disabled select option")
+        verifyInputSerialize(select, "D5", null, "disabled select option")
+        select = form.getElementsByTagName('select')[6]
+        verifyInputVal(select, null, "disabled multi select")
+        verifyInputSerialize(select, "D6", null, "disabled multi select")
+        select = form.getElementsByTagName('select')[7]
+        verifyInputVal(select, null, "disabled multi select option")
+        verifyInputSerialize(select, "D7", null, "disabled multi select option")
+      });
+
+      var foo = document.forms[0].getElementsByTagName('input')[1]
+      var bar = document.forms[0].getElementsByTagName('input')[2]
+      var choices = document.forms[0].getElementsByTagName('select')[0]
+
+      // mainly for Ender integration, so you can do this:
+      // $('input[name=T2],input[name=who],input[name=wha]').serialize()
+      test('serialize with multiple arguments', 1, function() {
+          var result = ajax.serialize(foo, bar, choices)
+          ok(result == "foo=bar&bar=baz&choices=two", "serialized all 3 arguments together")
+      });
+
+      // mainly for Ender integration, so you can do this:
+      // $('input[name=T2],input[name=who],input[name=wha]').serializeArray()
+      test('serializeArray with multiple arguments', 4, function() {
+          var result = ajax.serializeArray(foo, bar, choices)
+          ok(result.length == 3, "serialized as array of 3")
+          ok(result[0].name == "foo" && result[0].value == "bar", "serialized first element")
+          ok(result[1].name == "bar" && result[1].value == "baz", "serialized second element")
+          ok(result[2].name == "choices" && result[2].value == "two", "serialized third element")
+      });
+
+      // mainly for Ender integration, so you can do this:
+      // $('input[name=T2],input[name=who],input[name=wha]').serializeHash()
+      test('serializeHash with multiple arguments', 3, function() {
+          var result = ajax.serializeHash(foo, bar, choices)
+          ok(result.foo == "bar", "serialized first element")
+          ok(result.bar == "baz", "serialized second element")
+          ok(result.choices == "two", "serialized third element")
+      });
     });
 
 
