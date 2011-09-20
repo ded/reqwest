@@ -14,5 +14,8 @@
     , serializeArray: integrate('serializeArray')
     , serializeHash: sh
     , serializeObject: sh
+    , val: function () {
+        return r.val(this[0])
+      }
   }, true)
 }(ender);
