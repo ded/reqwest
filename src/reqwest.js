@@ -211,59 +211,114 @@
     return new Reqwest(o, fn)
   }
 
-  function enc(v) {
-    return encodeURIComponent(v)
+  // normalize newline variants according to spec -> CRLF
+  function normalize(s) {
+    return s ? s.replace(/\r?\n/g, '\r\n') : ''
   }
 
-  function serial(el) {
-    var n = el.name
-    // don't serialize elements that are disabled or without a name
-    if (el.disabled || !n) {
-      return ''
+  function isArray(a) {
+    return Object.prototype.toString.call(a) == '[object Array]'
+  }
+
+  function serial(el, cb) {
+    var ret = null
+      , n = el.name
+      , t = el.tagName.toLowerCase()
+      , submittable = true // define simply for readability
+      , optCb = function(o) { cb(n, normalize(o.value || o.text), submittable) }
+
+    // create a new callback if we don't have one, use this to build a return value
+    cb = cb || function(n, v) {
+      ret = ret ? (isArray(ret) && ret.push(v) ? ret : [ ret, v ]) : v
     }
-    n = enc(n)
-    switch (el.tagName.toLowerCase()) {
+
+    // don't serialize elements that are disabled or without a name allow 'option'
+    // to pass through, it should only get here via val()
+    if (el.disabled || (!n && t != 'option')) return null
+
+    switch (t) {
     case 'input':
-      switch (el.type.toLowerCase()) {
-      // silly wabbit
-      case 'reset':
-      case 'button':
-      case 'image':
-      case 'file':
-        return ''
-      case 'checkbox':
-      case 'radio':
-        return el.checked ? n + '=' + (el.value ? enc(el.value) : true) + '&' : ''
-      default: // text hidden password submit
-        return n + '=' + (el.value ? enc(el.value) : '') + '&'
+      if (!/reset|button|image|file/i.test(el.type)) {
+        var ch = /checkbox/i.test(el.type)
+          , ra = /radio/i.test(el.type)
+          , val = el.value
+        // WebKit gives us "" instead of "on if a checkbox has no value, so correct it here
+        cb(n, normalize(ch && val === '' ? 'on' : val), ch || ra ? el.checked : submittable)
       }
       break;
     case 'textarea':
-      return n + '=' + enc(el.value) + '&'
+      cb(n, normalize(el.value), submittable)
+      break;
     case 'select':
-      // @todo refactor beyond basic single selected value case
-      return n + '=' + enc(el.options[el.selectedIndex].value || el.options[el.selectedIndex].text) + '&'
+      if (el.type.toLowerCase() === 'select-one') {
+        var o = el.selectedIndex >= 0 ? el.options[el.selectedIndex] : null
+        o && !o.disabled ? optCb(o) : cb(n, null, !submittable)
+      } else {
+        for (var i = 0; el.length && i < el.length; i++) {
+          var opt = el.options[i]
+          opt.selected && !opt.disabled && optCb(opt)
+        }
+      }
+      break;
+    case 'option':
+      optCb(el)
     }
-    return ''
+    return ret
   }
 
-  reqwest.serialize = function (form) {
-    var fields = [form[byTag]('input')
-      , form[byTag]('select')
-      , form[byTag]('textarea')]
-      , serialized = [], i, j
+  // collect up all form elements found from the passed argument elements all
+  // the way down to child elements; pass a '<form>' or form fields.
+  // called with 'this'=callback to use for serial() on each element
+  function eachFormElement() {
+    var cb = this
+      , serializeSubtags = function(e, tags) {
+        for (var i = 0; i < tags.length; i++) {
+          var fa = e[byTag](tags[i])
+          for (var j = 0; j < fa.length; j++) serial(fa[j], cb)
+        }
+      }
 
-    for (i = 0, l = fields.length; i < l; ++i) {
-      for (j = 0, l2 = fields[i].length; j < l2; ++j) serialized.push(serial(fields[i][j]))
+    for (var i = 0; i < arguments.length; i++) {
+      var e = arguments[i]
+      if (/input|select|textarea/i.test(e.tagName)) serial(e, cb);
+      serializeSubtags(e, [ 'input', 'select', 'textarea' ])
     }
-    return serialized.join('').replace(/&$/, '')
+  }   
+
+  // query string style serialization
+  reqwest.serialize = function () {
+    var qs = ''
+    eachFormElement.apply(function(name, value, submittable) {
+      submittable && (qs += name + '=' + encodeURIComponent(value) + '&')
+    }, arguments)
+    // spaces should be + according to spec
+    return qs.replace(/&$/, '').replace(/%20/g,'+')
   }
 
-  reqwest.serializeArray = function (f) {
-    for (var pairs = this.serialize(f).split('&'), i = 0, l = pairs.length, r = [], o; i < l; i++) {
-      pairs[i] && (o = pairs[i].split('=')) && r.push({name: o[0], value: o[1]})
-    }
-    return r
+  // [ { name: 'name', value: 'value' }, ... ] style serialization
+  reqwest.serializeArray = function () {
+    var arr = []
+    eachFormElement.apply(function(name, value, submittable) {
+      submittable && arr.push({name: name, value: value})
+    }, arguments)
+    return arr 
+  }
+
+  // { 'name': 'value', ... } style serialization
+  reqwest.serializeHash = function (form) {
+    var hash = {}
+    eachFormElement.apply(function(name, value, submittable) {
+      if (!submittable) return;
+      if (name in hash) {
+        hash[name] && !isArray(hash[name]) && (hash[name] = [hash[name]])
+        hash[name].push(value)
+      } else hash[name] = value
+    }, arguments)
+    return hash
+  }
+
+  reqwest.val = function(e) {
+    return serial(e)
   }
 
   reqwest.noConflict = function () {
