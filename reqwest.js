@@ -80,7 +80,8 @@
   function getRequest(o, fn, err) {
     if (o.type == 'jsonp') {
       var script = doc.createElement('script')
-        , loaded = 0, reqId = uniqid++
+        , loaded = 0
+        , reqId = uniqid++
 
       // Add the global callback
       win[getCallbackName(o, reqId)] = generalCallback
@@ -90,7 +91,9 @@
       script.src = o.url
       script.async = true
       if (typeof script.onreadystatechange !== 'undefined') {
-          // for IE, but not for FF
+          // need this for IE due to out-of-order onreadystatechange(), binding script
+          // execution to an event listener gives us control over when the script
+          // is executed. See http://jaubourg.net/2010/07/loading-script-as-onclick-handler-of.html
           script.event = 'onclick'
           script.htmlFor = script.id = '_reqwest_' + reqId
       }
@@ -166,11 +169,6 @@
       o.complete && o.complete(resp)
     }
 
-    function error(resp, msg, t) {
-      o.error && o.error(resp, msg, t)
-      complete(resp)
-    }
-
     function success(resp) {
       var r = resp.responseText
       if (r) {
@@ -179,8 +177,7 @@
           try {
             resp = win.JSON ? win.JSON.parse(r) : eval('(' + r + ')')          
           } catch(err) {
-            error(resp, 'Could not parse JSON in response', err);
-            return;
+            return error(resp, 'Could not parse JSON in response', err)
           }
           break;
         case 'js':
@@ -195,6 +192,11 @@
       fn(resp)
       o.success && o.success(resp)
 
+      complete(resp)
+    }
+
+    function error(resp, msg, t) {
+      o.error && o.error(resp, msg, t)
       complete(resp)
     }
 
@@ -228,7 +230,7 @@
     n = enc(n)
     switch (el.tagName.toLowerCase()) {
     case 'input':
-      switch (el.type) {
+      switch (el.type.toLowerCase()) {
       // silly wabbit
       case 'reset':
       case 'button':
@@ -246,7 +248,7 @@
       return n + '=' + enc(el.value) + '&'
     case 'select':
       // @todo refactor beyond basic single selected value case
-      return n + '=' + enc(el.options[el.selectedIndex].value) + '&'
+      return n + '=' + enc(el.options[el.selectedIndex].value || el.options[el.selectedIndex].text) + '&'
     }
     return ''
   }
