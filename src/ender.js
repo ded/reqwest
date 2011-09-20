@@ -1,12 +1,19 @@
-var r = require('reqwest')
-ender.ender({
-  ajax: r
-})
-ender.ender({
-    serialize: function () {
-      return r.serialize(this[0])
-    }
-  , serializeArray: function() {
-    return r.serializeArray(this[0])
-  }
-}, true)
+!function ($) {
+  var r = require('reqwest')
+    , integrate = function(method) {
+      return function() {
+        var args = arguments.length > 0 ? arguments : this
+        return r[method].apply(null, args)
+      }
+    };
+
+  var sh = integrate('serializeHash')
+
+  $.ender({
+    ajax: r
+    , serialize: integrate('serialize')
+    , serializeArray: integrate('serializeArray')
+    , serializeHash: sh
+    , serializeObject: sh
+  }, true)
+}(ender);
