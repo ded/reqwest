@@ -84,7 +84,7 @@
       })
     })
 
-    test('Invalid JSON sets error on resp object', 1, function() {
+    test('invalid JSON sets error on resp object', 1, function() {
       ajax({
         url: '/tests/fixtures/invalidJSON.json',
         type: 'json',
@@ -96,6 +96,37 @@
         }
       })
     })
+
+    test('multiple parallel named JSONP callbacks', 4, function () {
+        ajax({
+          url: '/tests/fixtures/fixtures_jsonp_multi.js?callback=reqwest_0',
+          type: 'jsonp',
+          success: function (resp) {
+            ok(resp.a == "a", "evaluated response as JSONP")
+          }
+        });
+        ajax({
+          url: '/tests/fixtures/fixtures_jsonp_multi_b.js?callback=reqwest_0',
+          type: 'jsonp',
+          success: function (resp) {
+            ok(resp.b == "b", "evaluated response as JSONP")
+          }
+        });
+        ajax({
+          url: '/tests/fixtures/fixtures_jsonp_multi_c.js?callback=reqwest_0',
+          type: 'jsonp',
+          success: function (resp) {
+            ok(resp.c == "c", "evaluated response as JSONP")
+          }
+        });
+        ajax({
+          url: '/tests/fixtures/fixtures_jsonp_multi.js?callback=reqwest_0',
+          type: 'jsonp',
+          success: function (resp) {
+            ok(resp.a == "a", "evaluated response as JSONP")
+          }
+        })
+      })
 
   })
 
@@ -391,42 +422,6 @@
           ok(result.choices == "two", "serialized third element")
       });
     });
-
-
-    sink('Parallel Calls', function (test, ok) {
-
-      test('multiple named callbacks', 4, function () {
-        ajax({
-          url: '/tests/fixtures/fixtures_jsonp_multi.js?callback=reqwest_0',
-          type: 'jsonp',
-          success: function (resp) {
-            ok(resp.a == "a", "evaluated response as JSONP")
-          }
-        });
-        ajax({
-          url: '/tests/fixtures/fixtures_jsonp_multi_b.js?callback=reqwest_0',
-          type: 'jsonp',
-          success: function (resp) {
-            ok(resp.b == "b", "evaluated response as JSONP")
-          }
-        });
-        ajax({
-          url: '/tests/fixtures/fixtures_jsonp_multi_c.js?callback=reqwest_0',
-          type: 'jsonp',
-          success: function (resp) {
-            ok(resp.c == "c", "evaluated response as JSONP")
-          }
-        });
-        ajax({
-          url: '/tests/fixtures/fixtures_jsonp_multi.js?callback=reqwest_0',
-          type: 'jsonp',
-          success: function (resp) {
-            ok(resp.a == "a", "evaluated response as JSONP")
-          }
-        })
-      })
-
-    })
 
   })
 
