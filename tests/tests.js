@@ -1,4 +1,31 @@
 !function (ajax) {
+
+
+  var FakeXHR = function() {
+    this.args = {}
+    FakeXHR.last = this
+  }
+  FakeXHR.setup = function() {
+	FakeXHR.oldxhr = window['XMLHttpRequest']
+    window['XMLHttpRequest'] = FakeXHR
+    FakeXHR.last = null
+  }
+  FakeXHR.restore = function() {
+    window['XMLHttpRequest'] = FakeXHR.oldxhr
+  }
+  FakeXHR.prototype.methodCallCount = function(name) {
+    return this.args[name] ? this.args[name].length : 0
+  }
+  FakeXHR.prototype.methodCallArgs = function(name, i) {
+    return this.args[name] && this.args[name].length > i ? this.args[name][i] : null
+  }
+  v.each(['open', 'send', 'setRequestHeader' ], function(f) {
+    FakeXHR.prototype[f] = function() {
+      if (!this.args[f]) this.args[f] = [];
+      this.args[f].push(arguments)
+    }        	
+  })
+
   sink('Mime Types', function (test, ok) {
     test('JSON', 1, function() {
       ajax({
@@ -127,7 +154,6 @@
           }
         })
       })
-
   })
 
   sink('Connection Object', function (test, ok) {
@@ -161,6 +187,53 @@
           setTimeout(function() {
             ok(connection.request.readyState == 4, 'success callback has readyState of 4')
           }, 0)
+        }
+      })
+
+      test('ajax() encodes array `data`', 3, function() {
+        FakeXHR.setup()
+        try {
+          ajax({
+            url: '/tests/fixtures/fixtures.html',
+            data: [ { name: 'foo', value: 'bar' }, { name: 'baz', value: 'thunk' }]
+          })
+          ok(FakeXHR.last.methodCallCount('send') == 1, 'send called')
+          ok(FakeXHR.last.methodCallArgs('send', 0).length == 1, 'send called with 1 arg')
+          ok(FakeXHR.last.methodCallArgs('send', 0).length == 1 && FakeXHR.last.methodCallArgs('send', 0)[0] == 'foo=bar&baz=thunk', 'send called with encoded array')
+        } finally {
+          FakeXHR.restore()
+        }
+      })
+
+      test('ajax() encodes hash `data`', 3, function() {
+        FakeXHR.setup()
+        try {
+          ajax({
+            url: '/tests/fixtures/fixtures.html',
+            data: { bar: 'foo', thunk: 'baz' }
+          })
+          ok(FakeXHR.last.methodCallCount('send') == 1, 'send called')
+          ok(FakeXHR.last.methodCallArgs('send', 0).length == 1, 'send called with 1 arg')
+          ok(FakeXHR.last.methodCallArgs('send', 0).length == 1 && FakeXHR.last.methodCallArgs('send', 0)[0] == 'bar=foo&thunk=baz', 'send called with encoded array')
+        } finally {
+          FakeXHR.restore()
+        }
+      })
+
+      test('ajax() obeys `processData`', 3, function() {
+        FakeXHR.setup()
+        try {
+          var d = { bar: 'foo', thunk: 'baz' }
+          ajax({
+            url: '/tests/fixtures/fixtures.html',
+            processData: false,
+            data: d
+          })
+          ok(FakeXHR.last.methodCallCount('send') == 1, 'send called')
+          ok(FakeXHR.last.methodCallArgs('send', 0).length == 1, 'send called with 1 arg')
+          ok(FakeXHR.last.methodCallArgs('send', 0).length == 1 && FakeXHR.last.methodCallArgs('send', 0)[0] === d, 'send called with exact `data` object')
+        } finally {
+          FakeXHR.restore()
         }
       })
     })
@@ -224,7 +297,7 @@
       }
 
       function verifyFormSerialize(method, type) {
-        var expected = 'foo=bar&bar=baz&wha=1&wha=3&who=tawoo&choices=two&opinions=world+peace+is+not+real';
+        var expected = 'foo=bar&bar=baz&wha=1&wha=3&who=tawoo&%24escapable+name%24=escapeme&choices=two&opinions=world+peace+is+not+real';
         ok(method(forms[0]) == expected, 'serialized form (' + type + ')')
       }
 
@@ -244,6 +317,7 @@
           { name: 'wha', value: 1 },
           { name: 'wha', value: 3 },
           { name: 'who', value: 'tawoo' },
+          { name: '$escapable name$', value: 'escapeme' },
           { name: 'choices', value: 'two' },
           { name: 'opinions', value: 'world peace is not real' }
         ]
@@ -253,7 +327,7 @@
         for (var i = 0; i < expected.length; i++) {
           ok(v.some(result, function (v) {
             return v.name == expected[i].name && v.value == expected[i].value
-          }), 'serialized ' + result[i].name + ' (' + type + ')')
+          }), 'serialized ' + expected[i].name + ' (' + type + ')')
         }
       }
 
@@ -271,6 +345,7 @@
           bar: 'baz',
           wha: [ "1", "3" ],
           who: 'tawoo',
+          '$escapable name$': 'escapeme',
           choices: 'two',
           opinions: 'world peace is not real'
         }
@@ -455,11 +530,11 @@
         sHelper.verifyFormSerialize(ajax.serialize, 'direct')
       })
 
-      test('serializeArray(form)', 7, function () {
+      test('serializeArray(form)', 8, function () {
         sHelper.verifyFormSerializeArray(ajax.serializeArray, 'direct')
       });
 
-      test('serializeHash(form)', 7, function () {
+      test('serializeHash(form)', 8, function () {
         sHelper.verifyFormSerializeHash(ajax.serializeHash, 'direct')
       });
 
@@ -480,6 +555,25 @@
       test('serializeHash(element, element, element...)', 3, function() {
           sHelper.verifyMultiArgumentSerializeHash(ajax.serializeHash, 'direct', PASS_ARGS)
       });
+
+      test('serialize([{ name: x, value: y }, ... ]) name/value array serialization', 2, function() {
+        var arr = [ { name: 'foo', value: 'bar' }, {name: 'baz', value: ''}, { name: 'x', value: -20 }, { name: 'x', value: 20 }  ]
+        ok(ajax.serialize(arr) == "foo=bar&baz=&x=-20&x=20", "simple")
+        var arr = [ { name: 'dotted.name.intact', value: '$@%' }, { name: '$ $', value: 20 }, { name: 'leave britney alone', value: 'waa haa haa' } ]
+        ok(ajax.serialize(arr) == "dotted.name.intact=%24%40%25&%24+%24=20&leave+britney+alone=waa+haa+haa", "escaping required")
+      });
+
+      test('serialize({name: value,...} complex object serialization', 2, function() {
+        var obj = { 'foo': 'bar', 'baz': '', 'x': -20 }
+        ok(ajax.serialize(obj) == "foo=bar&baz=&x=-20", "simple")
+        var obj = { 'dotted.name.intact': '$@%', '$ $': 20, 'leave britney alone': 'waa haa haa' }
+        ok(ajax.serialize(obj) == "dotted.name.intact=%24%40%25&%24+%24=20&leave+britney+alone=waa+haa+haa", "escaping required")
+      });
+
+      test('serialize({name: [ value1, value2 ...],...} object with arrays serialization', 1, function() {
+        var obj = { 'foo': 'bar', 'baz': [ '', '', 'boo!' ], 'x': [ -20, 2.2, 20 ] }
+        ok(ajax.serialize(obj) == "foo=bar&baz=&baz=&baz=boo!&x=-20&x=2.2&x=20", "object with arrays")
+      });
     });
 
     sink('Ender Integration', function (test, ok) {
@@ -493,12 +587,12 @@
       });
 
       // sHelper.verify that you can do $.serializeArray(form)
-      test('$.serializeArray(form)', 7, function () {
+      test('$.serializeArray(form)', 8, function () {
         sHelper.verifyFormSerializeArray(ender.serializeArray, 'ender')
       });
 
       // sHelper.verify that you can do $.serializeHash(form)
-      test('$.serializeHash(form)', 7, function () {
+      test('$.serializeHash(form)', 8, function () {
         sHelper.verifyFormSerializeHash(ender.serializeHash, 'ender')
       });
 

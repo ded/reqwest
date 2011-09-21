@@ -110,11 +110,14 @@
       head.appendChild(script)
     } else {
       var http = xhr()
+        , data = o.processData !== false && o.data && typeof o.data !== 'string'
+          ? reqwest.serialize(o.data)
+          : o.data || null
       http.open(o.method || 'GET', typeof o == 'string' ? o : o.url, true)
       setHeaders(http, o)
       http.onreadystatechange = handleReadyState(http, fn, err)
       o.before && o.before(http)
-      http.send(o.data || null)
+      http.send(data)
       return http
     }
   }
@@ -216,16 +219,17 @@
     return s ? s.replace(/\r?\n/g, '\r\n') : ''
   }
 
-  function isArray(a) {
+  var isArray = typeof Array.isArray == 'function' ? Array.isArray : function(a) {
     return Object.prototype.toString.call(a) == '[object Array]'
   }
 
   function serial(el, cb) {
     var n = el.name
       , t = el.tagName.toLowerCase()
+      , o
 
     // don't serialize elements that are disabled or without a name
-    if (el.disabled || !n) return
+    if (el.disabled || !n) return;
 
     switch (t) {
     case 'input':
@@ -242,17 +246,16 @@
       break;
     case 'select':
       if (el.type.toLowerCase() === 'select-one') {
-        var o = el.selectedIndex >= 0 ? el.options[el.selectedIndex] : null
+        o = el.selectedIndex >= 0 ? el.options[el.selectedIndex] : null
         o && !o.disabled && cb(n, normalize(o.value || o.text))
       } else {
         for (var i = 0; el.length && i < el.length; i++) {
-          var o = el.options[i]
+          o = el.options[i]
           o.selected && !o.disabled && cb(n, normalize(o.value || o.text))
         }
       }
       break;
     }
-    return
   }
 
   // collect up all form elements found from the passed argument elements all
@@ -272,16 +275,34 @@
       if (/input|select|textarea/i.test(e.tagName)) serial(e, cb);
       serializeSubtags(e, [ 'input', 'select', 'textarea' ])
     }
-  }   
+  }
 
-  // query string style serialization
-  reqwest.serialize = function () {
+  function asQueryString(o) {
     var qs = ''
-    eachFormElement.apply(function(name, value) {
-      qs += name + '=' + encodeURIComponent(value) + '&'
-    }, arguments)
+      , i
+      , enc = encodeURIComponent
+      , push = function(k, v) {
+        qs += enc(k) + '=' + enc(v) + '&'
+      }
+    if (isArray(o)) {
+      for (i = 0; o && i < o.length; i++) push(o[i].name, o[i].value)
+    } else {
+      for (var k in o) {
+        if (!Object.hasOwnProperty.call(o, k)) continue;
+        var v = o[k]
+        if (isArray(v)) {
+          for (i = 0; i < v.length; i++) push(k, v[i])
+        } else push(k, o[k])
+      }
+    }
     // spaces should be + according to spec
     return qs.replace(/&$/, '').replace(/%20/g,'+')
+  }
+
+  // query string style serialization
+  reqwest.serialize = function (o) {
+	if (!o) return ""
+    return asQueryString(o && o.nodeType === 1 ? reqwest.serializeArray.apply(this, arguments) : o)
   }
 
   // [ { name: 'name', value: 'value' }, ... ] style serialization
