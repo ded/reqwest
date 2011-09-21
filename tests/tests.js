@@ -6,12 +6,15 @@
     FakeXHR.last = this
   }
   FakeXHR.setup = function() {
-	FakeXHR.oldxhr = window['XMLHttpRequest']
+    FakeXHR.oldxhr = window['XMLHttpRequest']
+    FakeXHR.oldaxo = window['ActiveXObject']
     window['XMLHttpRequest'] = FakeXHR
+    window['ActiveXObject'] = FakeXHR
     FakeXHR.last = null
   }
   FakeXHR.restore = function() {
     window['XMLHttpRequest'] = FakeXHR.oldxhr
+    window['ActiveXObject'] = FakeXHR.oldaxo
   }
   FakeXHR.prototype.methodCallCount = function(name) {
     return this.args[name] ? this.args[name].length : 0
@@ -23,7 +26,7 @@
     FakeXHR.prototype[f] = function() {
       if (!this.args[f]) this.args[f] = [];
       this.args[f].push(arguments)
-    }        	
+    }
   })
 
   sink('Mime Types', function (test, ok) {

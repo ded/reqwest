@@ -301,7 +301,7 @@
 
   // query string style serialization
   reqwest.serialize = function (o) {
-	if (!o) return ""
+    if (!o) return ""
     return asQueryString(o && o.nodeType === 1 ? reqwest.serializeArray.apply(this, arguments) : o)
   }
 
