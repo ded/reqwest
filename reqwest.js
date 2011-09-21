@@ -116,10 +116,17 @@
       head.appendChild(script)
     } else {
       var http = xhr()
+        , method = (o.method || 'GET').toUpperCase()
+        , url = (typeof o === 'string' ? o : o.url)
+        // convert non-string objects to query-string form unless o.processData is false 
         , data = o.processData !== false && o.data && typeof o.data !== 'string'
           ? reqwest.serialize(o.data)
           : o.data || null
-      http.open(o.method || 'GET', typeof o == 'string' ? o : o.url, true)
+
+      // if we're working on a GET request and we have data then we should append
+      // query string to end of URL and not post data
+      method == 'GET' && data && data !== '' && (url += (/\?/.test(url) ? '&' : '?') + data) && (data = null)
+      http.open(method, url, true)
       setHeaders(http, o)
       http.onreadystatechange = handleReadyState(http, fn, err)
       o.before && o.before(http)

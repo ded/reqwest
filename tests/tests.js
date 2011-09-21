@@ -19,8 +19,10 @@
   FakeXHR.prototype.methodCallCount = function(name) {
     return this.args[name] ? this.args[name].length : 0
   }
-  FakeXHR.prototype.methodCallArgs = function(name, i) {
-    return this.args[name] && this.args[name].length > i ? this.args[name][i] : null
+  FakeXHR.prototype.methodCallArgs = function(name, i, j) {
+    var a = this.args[name] && this.args[name].length > i ? this.args[name][i] : null
+    if (arguments.length > 2) return a && a.length > j ? a[j] : null
+    return a
   }
   v.each(['open', 'send', 'setRequestHeader' ], function(f) {
     FakeXHR.prototype[f] = function() {
@@ -198,11 +200,12 @@
         try {
           ajax({
             url: '/tests/fixtures/fixtures.html',
+            method: 'post',
             data: [ { name: 'foo', value: 'bar' }, { name: 'baz', value: 'thunk' }]
           })
           ok(FakeXHR.last.methodCallCount('send') == 1, 'send called')
           ok(FakeXHR.last.methodCallArgs('send', 0).length == 1, 'send called with 1 arg')
-          ok(FakeXHR.last.methodCallArgs('send', 0).length == 1 && FakeXHR.last.methodCallArgs('send', 0)[0] == 'foo=bar&baz=thunk', 'send called with encoded array')
+          ok(FakeXHR.last.methodCallArgs('send', 0, 0) == 'foo=bar&baz=thunk', 'send called with encoded array')
         } finally {
           FakeXHR.restore()
         }
@@ -213,11 +216,12 @@
         try {
           ajax({
             url: '/tests/fixtures/fixtures.html',
+            method: 'post',
             data: { bar: 'foo', thunk: 'baz' }
           })
           ok(FakeXHR.last.methodCallCount('send') == 1, 'send called')
           ok(FakeXHR.last.methodCallArgs('send', 0).length == 1, 'send called with 1 arg')
-          ok(FakeXHR.last.methodCallArgs('send', 0).length == 1 && FakeXHR.last.methodCallArgs('send', 0)[0] == 'bar=foo&thunk=baz', 'send called with encoded array')
+          ok(FakeXHR.last.methodCallArgs('send', 0, 0) == 'bar=foo&thunk=baz', 'send called with encoded array')
         } finally {
           FakeXHR.restore()
         }
@@ -230,14 +234,50 @@
           ajax({
             url: '/tests/fixtures/fixtures.html',
             processData: false,
+            method: 'post',
             data: d
           })
           ok(FakeXHR.last.methodCallCount('send') == 1, 'send called')
           ok(FakeXHR.last.methodCallArgs('send', 0).length == 1, 'send called with 1 arg')
-          ok(FakeXHR.last.methodCallArgs('send', 0).length == 1 && FakeXHR.last.methodCallArgs('send', 0)[0] === d, 'send called with exact `data` object')
+          ok(FakeXHR.last.methodCallArgs('send', 0, 0) === d, 'send called with exact `data` object')
         } finally {
           FakeXHR.restore()
         }
+      })
+
+      function testXhrGetUrlAdjustment(url, data, expectedUrl) {
+        FakeXHR.setup()
+        try {
+          ajax({
+            url: url,
+            data: data
+          })
+          ok(FakeXHR.last.methodCallCount('open') == 1, 'open called')
+          ok(FakeXHR.last.methodCallArgs('open', 0).length == 3, 'open called with 3 args')
+          ok(FakeXHR.last.methodCallArgs('open', 0, 0) == 'GET', 'first arg of open() is "GET"')
+          ok(FakeXHR.last.methodCallArgs('open', 0, 1) == expectedUrl
+            , 'second arg of open() is URL with query string')
+          ok(FakeXHR.last.methodCallArgs('open', 0, 2) === true, 'third arg of open() is `true`')
+          ok(FakeXHR.last.methodCallCount('send') == 1, 'send called')
+          ok(FakeXHR.last.methodCallArgs('send', 0).length == 1, 'send called with 1 arg')
+          ok(FakeXHR.last.methodCallArgs('send', 0, 0) === null, 'send called with null')
+        } finally {
+          FakeXHR.restore()
+        }
+      }
+
+      test('ajax() appends GET URL with ?`data`', 8, function() {
+        testXhrGetUrlAdjustment('/tests/fixtures/fixtures.html', 'bar=foo&thunk=baz', '/tests/fixtures/fixtures.html?bar=foo&thunk=baz')
+      })
+
+      test('ajax() appends GET URL with ?`data` (serialized object)', 8, function() {
+        testXhrGetUrlAdjustment('/tests/fixtures/fixtures.html', { bar: 'foo', thunk: 'baz' }, '/tests/fixtures/fixtures.html?bar=foo&thunk=baz')
+      })
+
+      test('ajax() appends GET URL with &`data` (serialized array)', 8, function() {
+        testXhrGetUrlAdjustment('/tests/fixtures/fixtures.html?x=y',
+          [ { name: 'bar', value: 'foo'}, {name: 'thunk', value: 'baz' } ],
+          '/tests/fixtures/fixtures.html?x=y&bar=foo&thunk=baz')
       })
     })
 
