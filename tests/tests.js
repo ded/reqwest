@@ -1,23 +1,25 @@
 !function (ajax) {
   sink('Mime Types', function (test, ok) {
-    test('JSON', 1, function() {
+    test('JSON', 2, function() {
       ajax({
         url: '/tests/fixtures/fixtures.json',
         type: 'json',
         success: function (resp) {
-          ok(resp.boosh == 'boosh', 'evaluated response as JSON')
+          ok(resp, 'received response')
+          ok(resp && resp.boosh == 'boosh', 'correctly evaluated response as JSON')
         }
       })
     })
 
     // For some reason, using the .jsonp file extension didn't work
     // in the testing suite. Using .js instead for now.
-    test('JSONP', 3, function() {
+    test('JSONP', 6, function() {
       ajax({
         url: '/tests/fixtures/fixtures_jsonp.js?callback=?',
         type: 'jsonp',
         success: function (resp) {
-          ok(resp.boosh == "boosh", "evaluated response as JSONP")
+          ok(resp, 'received response for unique generated callback')
+          ok(resp && resp.boosh == "boosh", "correctly evaluated response for unique generated callback as JSONP")
         }
       })
 
@@ -26,7 +28,8 @@
         type: 'jsonp',
         jsonpCallback: 'foo',
         success: function (resp) {
-          ok(resp.boosh == "boosh", "evaluated response as JSONP with custom callback")
+          ok(resp, 'received response for custom callback')
+          ok(resp && resp.boosh == "boosh", "correctly evaluated response as JSONP with custom callback")
         }
       })
 
@@ -35,7 +38,8 @@
         type: 'jsonp',
         jsonpCallback: 'foo',
         success: function (resp) {
-          ok(resp.boosh == "boosh", "evaluated response as JSONP with custom wildcard callback")
+          ok(resp, 'received response for custom wildcard callback')
+          ok(resp && resp.boosh == "boosh", "correctly evaluated response as JSONP with custom wildcard callback")
         }
       })
     })
@@ -45,7 +49,7 @@
         url: '/tests/fixtures/fixtures.js',
         type: 'js',
         success: function (resp) {
-          ok(boosh == 'boosh', 'evaluated response as JavaScript')
+          ok(typeof boosh !== 'undefined' && boosh == 'boosh', 'evaluated response as JavaScript')
         }
       })
     })
@@ -97,33 +101,37 @@
       })
     })
 
-    test('multiple parallel named JSONP callbacks', 4, function () {
+    test('multiple parallel named JSONP callbacks', 8, function () {
         ajax({
           url: '/tests/fixtures/fixtures_jsonp_multi.js?callback=reqwest_0',
           type: 'jsonp',
           success: function (resp) {
-            ok(resp.a == "a", "evaluated response as JSONP")
+            ok(resp, 'received response from call #1')
+            ok(resp && resp.a == "a", "evaluated response from call #1 as JSONP")
           }
         });
         ajax({
           url: '/tests/fixtures/fixtures_jsonp_multi_b.js?callback=reqwest_0',
           type: 'jsonp',
           success: function (resp) {
-            ok(resp.b == "b", "evaluated response as JSONP")
+            ok(resp, 'received response from call #2')
+            ok(resp && resp.b == "b", "evaluated response from call #2 as JSONP")
           }
         });
         ajax({
           url: '/tests/fixtures/fixtures_jsonp_multi_c.js?callback=reqwest_0',
           type: 'jsonp',
           success: function (resp) {
-            ok(resp.c == "c", "evaluated response as JSONP")
+            ok(resp, 'received response from call #2')
+            ok(resp && resp.c == "c", "evaluated response from call #3 as JSONP")
           }
         });
         ajax({
           url: '/tests/fixtures/fixtures_jsonp_multi.js?callback=reqwest_0',
           type: 'jsonp',
           success: function (resp) {
-            ok(resp.a == "a", "evaluated response as JSONP")
+            ok(resp, 'received response from call #2')
+            ok(resp && resp.a == "a", "evaluated response from call #4 as JSONP")
           }
         })
       })
