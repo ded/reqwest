@@ -11,7 +11,10 @@
 
   $.ender({
     ajax: r
-    , serialize: integrate('serialize')
+  })
+
+  $.ender({
+    serialize: integrate('serialize')
     , serializeArray: integrate('serializeArray')
     , serializeHash: sh
     , serializeObject: sh
