@@ -5,17 +5,22 @@
         var args = arguments.length > 0 ? arguments : this
         return r[method].apply(null, args)
       }
-    };
-
-  var sh = integrate('serializeHash')
+    }
+    , s = integrate('serialize')
+    , sh = integrate('serializeHash')
+    , sa = integrate('serializeArray')
 
   $.ender({
     ajax: r
+    , serialize: s
+    , serializeArray: sa
+    , serializeHash: sh
+    , serializeObject: sh
   })
 
   $.ender({
-    serialize: integrate('serialize')
-    , serializeArray: integrate('serializeArray')
+    serialize: s
+    , serializeArray: sa
     , serializeHash: sh
     , serializeObject: sh
   }, true)

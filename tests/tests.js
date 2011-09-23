@@ -349,7 +349,8 @@
 
       function verifyFormSerialize(method, type) {
         var expected = 'foo=bar&bar=baz&wha=1&wha=3&who=tawoo&%24escapable+name%24=escapeme&choices=two&opinions=world+peace+is+not+real';
-        ok(method(forms[0]) == expected, 'serialized form (' + type + ')')
+        ok(method, 'serialize() bound to context')
+        ok((method ? method(forms[0]) : null) == expected, 'serialized form (' + type + ')')
       }
 
       function executeMultiArgumentMethod(method, argType) {
@@ -357,7 +358,8 @@
       }
 
       function verifyMultiArgumentSerialize(method, type, argType) {
-        var result = executeMultiArgumentMethod(method, argType)
+        ok(method, 'serialize() bound in context')
+        var result = method ? executeMultiArgumentMethod(method, argType) : null
         ok(result == "foo=bar&bar=baz&choices=two", "serialized all 3 arguments together")
       }
 
@@ -373,7 +375,9 @@
           { name: 'opinions', value: 'world peace is not real' }
         ]
 
-        var result = method(forms[0]);
+        ok(method, 'serializeArray() bound to context')
+
+        var result = method ? method(forms[0]) : [];
 
         for (var i = 0; i < expected.length; i++) {
           ok(v.some(result, function (v) {
@@ -383,11 +387,12 @@
       }
 
       function verifyMultiArgumentSerializeArray(method, type, argType) {
-          var result = executeMultiArgumentMethod(method, argType)
+          ok(method, 'serializeArray() bound to context')
+          var result = method ? executeMultiArgumentMethod(method, argType) : []
           ok(result.length == 3, 'serialized as array of 3')
-          ok(result[0].name == 'foo' && result[0].value == 'bar', 'serialized first element (' + type + ')')
-          ok(result[1].name == 'bar' && result[1].value == 'baz', 'serialized second element (' + type + ')')
-          ok(result[2].name == 'choices' && result[2].value == 'two', 'serialized third element (' + type + ')')
+          ok(result.length == 3 && result[0].name == 'foo' && result[0].value == 'bar', 'serialized first element (' + type + ')')
+          ok(result.length == 3 && result[1].name == 'bar' && result[1].value == 'baz', 'serialized second element (' + type + ')')
+          ok(result.length == 3 && result[2].name == 'choices' && result[2].value == 'two', 'serialized third element (' + type + ')')
         }
 
       function verifyFormSerializeHash(method, type) {
@@ -401,7 +406,9 @@
           opinions: 'world peace is not real'
         }
 
-        var result = method(forms[0]);
+        ok(method, 'serializeHash() bound to context')
+
+        var result = method ? method(forms[0]) : {};
 
         ok(v.keys(expected).length === v.keys(result).length, 'same number of keys (' + type + ')')
 
@@ -411,7 +418,8 @@
       }
 
       function verifyMultiArgumentSerializeHash(method, type, argType) {
-        var result = executeMultiArgumentMethod(method, argType)
+        ok(method, 'serializeHash() bound to context')
+        var result = method ? executeMultiArgumentMethod(method, argType) : {}
         ok(result.foo == 'bar', 'serialized first element (' + type + ')')
         ok(result.bar == 'baz', 'serialized second element (' + type + ')')
         ok(result.choices == 'two', 'serialized third element (' + type + ')')
@@ -577,33 +585,33 @@
         sHelper.verifyInput(select, 'D7', null, 'disabled multi select option')
       });
 
-      test('serialize(form)', 1, function () {
+      test('serialize(form)', 2, function () {
         sHelper.verifyFormSerialize(ajax.serialize, 'direct')
       })
 
-      test('serializeArray(form)', 8, function () {
+      test('serializeArray(form)', 9, function () {
         sHelper.verifyFormSerializeArray(ajax.serializeArray, 'direct')
       });
 
-      test('serializeHash(form)', 8, function () {
+      test('serializeHash(form)', 9, function () {
         sHelper.verifyFormSerializeHash(ajax.serializeHash, 'direct')
       });
 
       // mainly for Ender integration, so you can do this:
       // $('input[name=T2],input[name=who],input[name=wha]').serialize()
-      test('serialize(element, element, element...)', 1, function() {
+      test('serialize(element, element, element...)', 2, function() {
         sHelper.verifyMultiArgumentSerialize(ajax.serialize, 'direct', PASS_ARGS)
       });
 
       // mainly for Ender integration, so you can do this:
       // $('input[name=T2],input[name=who],input[name=wha]').serializeArray()
-      test('serializeArray(element, element, element...)', 4, function() {
+      test('serializeArray(element, element, element...)', 5, function() {
           sHelper.verifyMultiArgumentSerializeArray(ajax.serializeArray, 'direct', PASS_ARGS)
       });
 
       // mainly for Ender integration, so you can do this:
       // $('input[name=T2],input[name=who],input[name=wha]').serializeHash()
-      test('serializeHash(element, element, element...)', 3, function() {
+      test('serializeHash(element, element, element...)', 4, function() {
           sHelper.verifyMultiArgumentSerializeHash(ajax.serializeHash, 'direct', PASS_ARGS)
       });
 
@@ -628,52 +636,52 @@
     });
 
     sink('Ender Integration', function (test, ok) {
-      test('$.ajax alias for reqwest', 1, function() {
+      test('$.ajax alias for reqwest, not bound to boosh', 1, function() {
         ok(ender.ajax === ajax, '$.ajax is reqwest');
       });
 
       // sHelper.verify that you can do $.serialize(form)
-      test('$.serialize(form)', 1, function() {
+      test('$.serialize(form)', 2, function() {
         sHelper.verifyFormSerialize(ender.serialize, 'ender')
       });
 
       // sHelper.verify that you can do $.serializeArray(form)
-      test('$.serializeArray(form)', 8, function () {
+      test('$.serializeArray(form)', 9, function () {
         sHelper.verifyFormSerializeArray(ender.serializeArray, 'ender')
       });
 
       // sHelper.verify that you can do $.serializeHash(form)
-      test('$.serializeHash(form)', 8, function () {
+      test('$.serializeHash(form)', 9, function () {
         sHelper.verifyFormSerializeHash(ender.serializeHash, 'ender')
       });
 
       // sHelper.verify that you can do $.serializeObject(form)
       test('$.serializeObject alias for serializeHash', 1, function() {
-        ok(ender.serializeObject === ender.serializeHash)
+        ok(ender.serializeObject != null && ender.serializeObject === ender.serializeHash, 'not null and same ref')
       });
 
-      test('$.serialize(element, element, element...)', 1, function() {
+      test('$.serialize(element, element, element...)', 2, function() {
         sHelper.verifyMultiArgumentSerialize(ender.serialize, 'ender', PASS_ARGS)
       });
 
-      test('$.serializeArray(element, element, element...)', 4, function() {
+      test('$.serializeArray(element, element, element...)', 5, function() {
         sHelper.verifyMultiArgumentSerializeArray(ender.serializeArray, 'ender', PASS_ARGS)
       });
       
-      test('$.serializeHash(element, element, element...)', 3, function() {
+      test('$.serializeHash(element, element, element...)', 4, function() {
         sHelper.verifyMultiArgumentSerializeHash(ender.serializeHash, 'ender', PASS_ARGS)
       });
 
-      test('$(element, element, element...).serialize()', 1, function() {
-        sHelper.verifyMultiArgumentSerialize(ender.serialize, 'ender', BIND_ARGS)
+      test('$(element, element, element...).serialize()', 2, function() {
+        sHelper.verifyMultiArgumentSerialize(ender._boosh.serialize, 'ender', BIND_ARGS)
       });
 
-      test('$(element, element, element...).serializeArray()', 4, function() {
-        sHelper.verifyMultiArgumentSerializeArray(ender.serializeArray, 'ender', BIND_ARGS)
+      test('$(element, element, element...).serializeArray()', 5, function() {
+        sHelper.verifyMultiArgumentSerializeArray(ender._boosh.serializeArray, 'ender', BIND_ARGS)
       });
         
-      test('$(element, element, element...).serializeHash()', 3, function() {
-        sHelper.verifyMultiArgumentSerializeHash(ender.serializeHash, 'ender', BIND_ARGS)
+      test('$(element, element, element...).serializeHash()', 4, function() {
+        sHelper.verifyMultiArgumentSerializeHash(ender._boosh.serializeHash, 'ender', BIND_ARGS)
       });
 
     });
