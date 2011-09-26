@@ -2,26 +2,22 @@
   var r = require('reqwest')
     , integrate = function(method) {
       return function() {
-        var args = arguments.length > 0 ? arguments : this
+        var args = (this && this.length > 0 ? this : []).concat(Array.prototype.slice.call(arguments, 0))
         return r[method].apply(null, args)
       }
     }
     , s = integrate('serialize')
-    , sh = integrate('serializeHash')
     , sa = integrate('serializeArray')
 
   $.ender({
     ajax: r
     , serialize: s
     , serializeArray: sa
-    , serializeHash: sh
-    , serializeObject: sh
+    , toQueryString: r.toQueryString
   })
 
   $.ender({
     serialize: s
     , serializeArray: sa
-    , serializeHash: sh
-    , serializeObject: sh
   }, true)
 }(ender);

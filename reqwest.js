@@ -120,7 +120,7 @@
         , url = (typeof o === 'string' ? o : o.url)
         // convert non-string objects to query-string form unless o.processData is false 
         , data = o.processData !== false && o.data && typeof o.data !== 'string'
-          ? reqwest.serialize(o.data)
+          ? reqwest.toQueryString(o.data)
           : o.data || null
 
       // if we're working on a GET request and we have data then we should append
@@ -290,32 +290,21 @@
     }
   }
 
-  function asQueryString(o) {
-    var qs = ''
-      , i
-      , enc = encodeURIComponent
-      , push = function(k, v) {
-        qs += enc(k) + '=' + enc(v) + '&'
-      }
-    if (isArray(o)) {
-      for (i = 0; o && i < o.length; i++) push(o[i].name, o[i].value)
-    } else {
-      for (var k in o) {
-        if (!Object.hasOwnProperty.call(o, k)) continue;
-        var v = o[k]
-        if (isArray(v)) {
-          for (i = 0; i < v.length; i++) push(k, v[i])
-        } else push(k, o[k])
-      }
-    }
-    // spaces should be + according to spec
-    return qs.replace(/&$/, '').replace(/%20/g,'+')
+  // standard query string style serialization
+  function serializeQueryString() {
+    return reqwest.toQueryString(reqwest.serializeArray.apply(null, arguments))
   }
 
-  // query string style serialization
-  reqwest.serialize = function (o) {
-    if (!o) return ""
-    return asQueryString(o && o.nodeType === 1 ? reqwest.serializeArray.apply(this, arguments) : o)
+  // { 'name': 'value', ... } style serialization
+  function serializeHash() {
+    var hash = {}
+    eachFormElement.apply(function(name, value) {
+      if (name in hash) {
+        hash[name] && !isArray(hash[name]) && (hash[name] = [hash[name]])
+        hash[name].push(value)
+      } else hash[name] = value
+    }, arguments)
+    return hash
   }
 
   // [ { name: 'name', value: 'value' }, ... ] style serialization
@@ -327,16 +316,43 @@
     return arr 
   }
 
-  // { 'name': 'value', ... } style serialization
-  reqwest.serializeHash = function (form) {
-    var hash = {}
-    eachFormElement.apply(function(name, value) {
-      if (name in hash) {
-        hash[name] && !isArray(hash[name]) && (hash[name] = [hash[name]])
-        hash[name].push(value)
-      } else hash[name] = value
-    }, arguments)
-    return hash
+  reqwest.serialize = function () {
+    if (arguments.length === 0) return "";
+    var opt, fn
+      , args = Array.prototype.slice.call(arguments, 0)
+
+    opt = args.pop()
+    opt && opt.nodeType && args.push(opt) && (opt = null)
+    opt && (opt = opt.type)
+
+    if (opt == 'map') fn = serializeHash
+    else if (opt == 'array') fn = reqwest.serializeArray
+    else fn = serializeQueryString
+
+    return fn.apply(null, args)
+  }
+
+  reqwest.toQueryString = function(o) {
+    var qs = '', i
+      , enc = encodeURIComponent
+      , push = function(k, v) {
+          qs += enc(k) + '=' + enc(v) + '&'
+        }
+
+    if (isArray(o)) {
+      for (i = 0; o && i < o.length; i++) push(o[i].name, o[i].value)
+    } else {
+      for (var k in o) {
+        if (!Object.hasOwnProperty.call(o, k)) continue;
+        var v = o[k]
+        if (isArray(v)) {
+          for (i = 0; i < v.length; i++) push(k, v[i])
+        } else push(k, o[k])
+      }
+    }
+
+    // spaces should be + according to spec
+    return qs.replace(/&$/, '').replace(/%20/g,'+')
   }
 
   reqwest.noConflict = function () {
