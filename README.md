@@ -32,10 +32,20 @@ reqwest({
 
 ``` js
 reqwest({
+    url: 'path/to/html'
+  , method: 'get'
+  , data: { [ name: 'foo', value: 'bar' ], [ name: 'baz', value: 100 ] }
+  , success: function (resp) {
+      qwery('#content').html(resp)
+    }
+})
+```
+
+``` js
+reqwest({
     url: 'path/to/json'
   , type: 'json'
   , method: 'post'
-  , data: { [ name: 'foo', value: 'bar' ], [ name: 'baz', value: 100 ] }
   , error: function (err) { }
   , success: function (resp) {
       qwery('#content').html(resp.content)
