@@ -21,6 +21,28 @@ reqwest('path/to/html', function (resp) {
 
 ``` js
 reqwest({
+    url: 'path/to/html'
+  , method: 'post'
+  , data: { foo: 'bar', baz: 100 }
+  , success: function (resp) {
+      qwery('#content').html(resp)
+    }
+})
+```
+
+``` js
+reqwest({
+    url: 'path/to/html'
+  , method: 'get'
+  , data: { [ name: 'foo', value: 'bar' ], [ name: 'baz', value: 100 ] }
+  , success: function (resp) {
+      qwery('#content').html(resp)
+    }
+})
+```
+
+``` js
+reqwest({
     url: 'path/to/json'
   , type: 'json'
   , method: 'post'
@@ -74,8 +96,22 @@ Use it as such:
 
 ``` js
 $.ajax({ ... })
-$(form).serialize()
+```
+
+Serialize things:
+
+``` js
+$(form).serialize() // returns query string -> x=y&...
+$(form).serialize({type:'array'}) // returns array name/value pairs -> [ { name: x, value: y}, ... ]
+$(form).serialize({type:'map'}) // returns an object representation -> { x: y, ... }
 $(form).serializeArray()
+```
+
+Or, get a bit fancy:
+
+``` js
+$('#myform input[name=myradios]').serialize({type:'map'})['myradios'] // get the selected value
+$('input[type=text],#specialthing').serialize() // turn any arbitrary set of form elements into a query string
 ```
 
 **Happy Ajaxing!**
