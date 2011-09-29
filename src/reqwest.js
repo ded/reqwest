@@ -37,8 +37,16 @@
   }
 
   function setHeaders(http, o) {
-    var headers = o.headers || {}
-    headers.Accept = headers.Accept || 'text/javascript, text/html, application/xml, text/xml, */*'
+    var headers = o.headers || {},
+     mimetypes= {
+      			xml: "application/xml, text/xml",
+      			html: "text/html",
+      			text: "text/plain",
+      			json: "application/json, text/javascript",
+      			js: 'application/javascript, text/javascript'
+      		}
+      headers.Accept = headers.Accept || mimetypes[o.type] || 'text/javascript, text/html, application/xml, text/xml, */*'
+//    headers.Accept = headers.Accept || 'text/javascript, text/html, application/xml, text/xml, */*'
 
     // breaks cross-origin requests with legacy browsers
     if (!o.crossOrigin) {
