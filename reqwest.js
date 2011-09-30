@@ -239,7 +239,13 @@
   function serial(el, cb) {
     var n = el.name
       , t = el.tagName.toLowerCase()
-      , o
+      , optCb = function(o) {
+          // IE gives value="" even where there is no value attribute
+          // 'specified' ref: http://www.w3.org/TR/DOM-Level-3-Core/core.html#ID-862529273
+          if (o && !o.disabled)
+            cb(n, normalize(o.attributes.value && o.attributes.value.specified ? o.value : o.text))
+        }
+
 
     // don't serialize elements that are disabled or without a name
     if (el.disabled || !n) return;
@@ -259,12 +265,10 @@
       break;
     case 'select':
       if (el.type.toLowerCase() === 'select-one') {
-        o = el.selectedIndex >= 0 ? el.options[el.selectedIndex] : null
-        o && !o.disabled && cb(n, normalize(o.value || o.text))
+        optCb(el.selectedIndex >= 0 ? el.options[el.selectedIndex] : null)
       } else {
         for (var i = 0; el.length && i < el.length; i++) {
-          o = el.options[i]
-          o.selected && !o.disabled && cb(n, normalize(o.value || o.text))
+          el.options[i].selected && optCb(el.options[i])
         }
       }
       break;
