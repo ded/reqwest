@@ -538,13 +538,17 @@
         sHelper.testInput(select, 'S1', null, 'select, no options')
       });
 
-      test('correctly serialize select with values', 4 + 4 + 4 + 2, function() {
+      test('correctly serialize select with values', 4 + 4 + 4 + 4 + 2, function() {
         var select = sHelper.formElements(1, 'select', 1)
         sHelper.testInput(select, 'S2', 'abc', 'select option 1 (default)')
         select.selectedIndex = 1
         sHelper.testInput(select, 'S2', 'def', 'select option 2')
         select.selectedIndex = 6
         sHelper.testInput(select, 'S2', 'disco stu', 'select option 7')
+        // a special case where we have <option value="">X</option>, should return "" rather than X
+        // which will happen if you just do a simple `value=(option.value||option.text)`
+        select.selectedIndex = 9
+        sHelper.testInput(select, 'S2', '', 'select option 9, value="" should yield ""')
         select.selectedIndex = -1
         sHelper.testInput(select, 'S2', null, 'select, unselected')
       });
