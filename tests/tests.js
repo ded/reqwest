@@ -42,7 +42,7 @@
       })
     })
 
-    test('JSONP', 6, function() {
+    test('JSONP', 16, function() {
       ajax({
         url: '/tests/fixtures/fixtures_jsonp.jsonp?callback=?',
         type: 'jsonp',
@@ -69,6 +69,52 @@
         success: function (resp) {
           ok(resp, 'received response for custom wildcard callback')
           ok(resp && resp.boosh == "boosh", "correctly evaluated response as JSONP with custom wildcard callback")
+        }
+      })
+
+      ajax({
+        url: '/tests/fixtures/fixtures_jsonp3.jsonp',
+        type: 'jsonp',
+        jsonpCallback: 'foo',
+        success: function (resp) {
+          ok(resp, 'received response for custom wildcard callback')
+          ok(resp && resp.boosh == "boosh", "correctly evaluated response as JSONP with custom callback not in url")
+        }
+      })
+
+      ajax({
+        url: '/tests/none.jsonp?echo&somevar=some+long+string+here',
+        type: 'jsonp',
+        jsonpCallbackName: 'yohoho',
+        success: function(resp) {
+          ok(resp, 'received response from echo callback')
+          ok(resp && resp.somevar == 'some long string here', 'correctly evaluated response as JSONP with echo callback')
+        }
+      })
+
+      ajax({
+        url: '/tests/none.jsonp?echo', // should append &somevar...
+        type: 'jsonp',
+        data: { somevar: 'some long string here', anothervar: 'yo ho ho!' },
+        success: function(resp) {
+          ok(resp, 'received response from echo callback')
+          ok(resp && resp.somevar == 'some long string here', 'correctly sent and received data object from JSONP echo (1)')
+          ok(resp && resp.anothervar == 'yo ho ho!', 'correctly sent and received data object from JSONP echo (2)')
+        }
+      })
+
+      ajax({
+        url: '/tests/none.jsonp', // should append ?echo...etc.
+        type: 'jsonp',
+        data: [
+          { name: 'somevar', value: 'some long string here' },
+          { name: 'anothervar', value: 'yo ho ho!' },
+          { name: 'echo', value: true }
+        ],
+        success: function(resp) {
+          ok(resp, 'received response from echo callback')
+          ok(resp && resp.somevar == 'some long string here', 'correctly sent and received data array from JSONP echo (1)')
+          ok(resp && resp.anothervar == 'yo ho ho!', 'correctly sent and received data array from JSONP echo (2)')
         }
       })
     })

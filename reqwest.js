@@ -56,83 +56,88 @@
     }
   }
 
-  function getCallbackName(o, reqId) {
-    var callbackVar = o.jsonpCallback || "callback"
-    if (o.url.slice(-(callbackVar.length + 2)) == (callbackVar + "=?")) {
-      // Generate a guaranteed unique callback name
-      var callbackName = "reqwest_" + reqId
-
-      // Replace the ? in the URL with the generated name
-      o.url = o.url.substr(0, o.url.length - 1) + callbackName
-      return callbackName
-    } else {
-      // Find the supplied callback name
-      var regex = new RegExp(callbackVar + "=([\\w]+)")
-      return o.url.match(regex)[1]
-    }
-  }
-
-  // Store the data returned by the most recent callback
   function generalCallback(data) {
     lastValue = data
   }
 
-  function getRequest(o, fn, err) {
-    if (o.type == 'jsonp') {
-      var script = doc.createElement('script')
-        , loaded = 0
-        , reqId = uniqid++
+  function urlappend(url, s) {
+    return url + (/\?/.test(url) ? '&' : '?') + s
+  }
 
-      // Add the global callback
-      win[getCallbackName(o, reqId)] = generalCallback
+  function handleJsonp(o, fn, err, url) {
+    var reqId = uniqid++
+      , cbkey = o.jsonpCallback || 'callback' // the 'callback' key
+      , cbval = o.jsonpCallbackName || ('reqwest_' + reqId) // the 'callback' value
+      , cbreg = new RegExp('(' + cbkey + ')=(.+)(&|$)')
+      , match = url.match(cbreg)
+      , script = doc.createElement('script')
+      , loaded = 0
 
-      // Setup our script element
-      script.type = 'text/javascript'
-      script.src = o.url
-      script.async = true
-      if (typeof script.onreadystatechange !== 'undefined') {
-          // need this for IE due to out-of-order onreadystatechange(), binding script
-          // execution to an event listener gives us control over when the script
-          // is executed. See http://jaubourg.net/2010/07/loading-script-as-onclick-handler-of.html
-          script.event = 'onclick'
-          script.htmlFor = script.id = '_reqwest_' + reqId
+    if (match) {
+      if (match[2] === '?') {
+        url = url.replace(cbreg, '$1=' + cbval + '$3') // wildcard callback func name
+      } else {
+        cbval = match[2] // provided callback func name
       }
-
-      script.onload = script.onreadystatechange = function () {
-        if ((script[readyState] && script[readyState] !== "complete" && script[readyState] !== "loaded") || loaded) {
-          return false
-        }
-        script.onload = script.onreadystatechange = null
-        script.onclick && script.onclick()
-        // Call the user callback with the last value stored
-        // and clean up values and scripts.
-        o.success && o.success(lastValue)
-        lastValue = undefined
-        head.removeChild(script)
-        loaded = 1
-      }
-
-      // Add the script to the DOM head
-      head.appendChild(script)
     } else {
-      var http = xhr()
-        , method = (o.method || 'GET').toUpperCase()
-        , url = (typeof o === 'string' ? o : o.url)
-        // convert non-string objects to query-string form unless o.processData is false 
-        , data = o.processData !== false && o.data && typeof o.data !== 'string'
-          ? reqwest.toQueryString(o.data)
-          : o.data || null
-
-      // if we're working on a GET request and we have data then we should append
-      // query string to end of URL and not post data
-      method == 'GET' && data && data !== '' && (url += (/\?/.test(url) ? '&' : '?') + data) && (data = null)
-      http.open(method, url, true)
-      setHeaders(http, o)
-      http.onreadystatechange = handleReadyState(http, fn, err)
-      o.before && o.before(http)
-      http.send(data)
-      return http
+      url = urlappend(url, cbkey + '=' + cbval) // no callback details, add 'em
     }
+
+    win[cbval] = generalCallback
+
+    script.type = 'text/javascript'
+    script.src = url
+    script.async = true
+    if (typeof script.onreadystatechange !== 'undefined') {
+        // need this for IE due to out-of-order onreadystatechange(), binding script
+        // execution to an event listener gives us control over when the script
+        // is executed. See http://jaubourg.net/2010/07/loading-script-as-onclick-handler-of.html
+        script.event = 'onclick'
+        script.htmlFor = script.id = '_reqwest_' + reqId
+    }
+
+    script.onload = script.onreadystatechange = function () {
+      if ((script[readyState] && script[readyState] !== 'complete' && script[readyState] !== 'loaded') || loaded) {
+        return false
+      }
+      script.onload = script.onreadystatechange = null
+      script.onclick && script.onclick()
+      // Call the user callback with the last value stored and clean up values and scripts.
+      o.success && o.success(lastValue)
+      lastValue = undefined
+      head.removeChild(script)
+      loaded = 1
+    }
+
+    // Add the script to the DOM head
+    head.appendChild(script)
+  }
+
+  function getRequest(o, fn, err) {
+    var method = (o.method || 'GET').toUpperCase()
+      , url = typeof o === 'string' ? o : o.url
+      // convert non-string objects to query-string form unless o.processData is false 
+      , data = (o.processData !== false && o.data && typeof o.data !== 'string')
+        ? reqwest.toQueryString(o.data)
+        : (o.data || null);
+
+    // if we're working on a GET request and we have data then we should append
+    // query string to end of URL and not post data
+    (o.type == 'jsonp' || method == 'GET')
+      && data
+      && (url = urlappend(url, data))
+      && (data = null)
+
+    if (o.type == 'jsonp')
+      return handleJsonp(o, fn, err, url)
+
+    var http = xhr()
+    http.open(method, url, true)
+    setHeaders(http, o)
+    http.onreadystatechange = handleReadyState(http, fn, err)
+    o.before && o.before(http)
+    http.send(data)
+    return http
   }
 
   function Reqwest(o, fn) {
@@ -142,22 +147,8 @@
   }
 
   function setType(url) {
-    if (/\.json$/.test(url)) {
-      return 'json'
-    }
-    if (/\.jsonp$/.test(url)) {
-      return 'jsonp'
-    }
-    if (/\.js$/.test(url)) {
-      return 'js'
-    }
-    if (/\.html?$/.test(url)) {
-      return 'html'
-    }
-    if (/\.xml$/.test(url)) {
-      return 'xml'
-    }
-    return 'js'
+    var m = url.match(/\.(json|jsonp|html|xml)(\?|$)/)
+    return m ? m[1] : 'js'
   }
 
   function init(o, fn) {
@@ -321,7 +312,7 @@
   }
 
   reqwest.serialize = function () {
-    if (arguments.length === 0) return "";
+    if (arguments.length === 0) return '';
     var opt, fn
       , args = Array.prototype.slice.call(arguments, 0)
 
