@@ -42,11 +42,9 @@
       })
     })
 
-    // For some reason, using the .jsonp file extension didn't work
-    // in the testing suite. Using .js instead for now.
     test('JSONP', 6, function() {
       ajax({
-        url: '/tests/fixtures/fixtures_jsonp.js?callback=?',
+        url: '/tests/fixtures/fixtures_jsonp.jsonp?callback=?',
         type: 'jsonp',
         success: function (resp) {
           ok(resp, 'received response for unique generated callback')
@@ -55,7 +53,7 @@
       })
 
       ajax({
-        url: '/tests/fixtures/fixtures_jsonp2.js?foo=bar',
+        url: '/tests/fixtures/fixtures_jsonp2.jsonp?foo=bar',
         type: 'jsonp',
         jsonpCallback: 'foo',
         success: function (resp) {
@@ -65,7 +63,7 @@
       })
 
       ajax({
-        url: '/tests/fixtures/fixtures_jsonp3.js?foo=?',
+        url: '/tests/fixtures/fixtures_jsonp3.jsonp?foo=?',
         type: 'jsonp',
         jsonpCallback: 'foo',
         success: function (resp) {
@@ -134,7 +132,7 @@
 
     test('multiple parallel named JSONP callbacks', 8, function () {
         ajax({
-          url: '/tests/fixtures/fixtures_jsonp_multi.js?callback=reqwest_0',
+          url: '/tests/fixtures/fixtures_jsonp_multi.jsonp?callback=reqwest_0',
           type: 'jsonp',
           success: function (resp) {
             ok(resp, 'received response from call #1')
@@ -142,7 +140,7 @@
           }
         });
         ajax({
-          url: '/tests/fixtures/fixtures_jsonp_multi_b.js?callback=reqwest_0',
+          url: '/tests/fixtures/fixtures_jsonp_multi_b.jsonp?callback=reqwest_0',
           type: 'jsonp',
           success: function (resp) {
             ok(resp, 'received response from call #2')
@@ -150,7 +148,7 @@
           }
         });
         ajax({
-          url: '/tests/fixtures/fixtures_jsonp_multi_c.js?callback=reqwest_0',
+          url: '/tests/fixtures/fixtures_jsonp_multi_c.jsonp?callback=reqwest_0',
           type: 'jsonp',
           success: function (resp) {
             ok(resp, 'received response from call #2')
@@ -158,7 +156,7 @@
           }
         });
         ajax({
-          url: '/tests/fixtures/fixtures_jsonp_multi.js?callback=reqwest_0',
+          url: '/tests/fixtures/fixtures_jsonp_multi.jsonp?callback=reqwest_0',
           type: 'jsonp',
           success: function (resp) {
             ok(resp, 'received response from call #2')

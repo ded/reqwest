@@ -11,7 +11,7 @@ var routes = {
     res.end()
   },
 
-  '(([a-zA-Z0-9_\\-\\/]+)\\.(css|js|json|html)$)': function (req, res, m, file, ext) {
+  '(([a-zA-Z0-9_\\-\\/]+)\\.(css|js|json|jsonp|html)$)': function (req, res, m, file, ext) {
     res.writeHead(200, {'Expires': 0, 'Cache-Control': 'max-age=0, no-cache, no-store', 'Content-Type': mime.lookup(ext)})
     res.write(fs.readFileSync('./' + file + '.' + ext))
     res.end()
