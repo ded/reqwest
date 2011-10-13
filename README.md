@@ -56,7 +56,7 @@ reqwest({
 ``` js
 reqwest({
     url: 'path/to/data.jsonp?callback=?'
-  , type: 'jsonp',
+  , type: 'jsonp'
   , success: function (resp) {
       qwery('#content').html(resp.content)
     }
