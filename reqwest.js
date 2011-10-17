@@ -4,7 +4,6 @@
   * https://github.com/ded/reqwest
   * license MIT
   */
-
 !function (name, definition) {
   if (typeof define == 'function') define(definition)
   else if (typeof module != 'undefined') module.exports = definition()
@@ -43,21 +42,18 @@
   }
 
   function setHeaders(http, o) {
-    var headers = o.headers || {},
-     mimetypes= {
-      			xml: "application/xml, text/xml",
-      			html: "text/html",
-      			text: "text/plain",
-      			json: "application/json, text/javascript",
-      			js: 'application/javascript, text/javascript'
-      		}
+    var headers = o.headers || {}
+      , mimetypes= {
+            xml: "application/xml, text/xml"
+          , html: "text/html"
+          , text: "text/plain"
+          , json: "application/json, text/javascript"
+          , js: 'application/javascript, text/javascript'
+        }
       headers.Accept = headers.Accept || mimetypes[o.type] || 'text/javascript, text/html, application/xml, text/xml, */*'
-//    headers.Accept = headers.Accept || 'text/javascript, text/html, application/xml, text/xml, */*'
 
     // breaks cross-origin requests with legacy browsers
-    if (!o.crossOrigin) {
-      headers['X-Requested-With'] = headers['X-Requested-With'] || 'XMLHttpRequest'
-    }
+    if (!o.crossOrigin) headers['X-Requested-With'] = headers['X-Requested-With'] || 'XMLHttpRequest'
     headers[contentType] = headers[contentType] || 'application/x-www-form-urlencoded'
     for (var h in headers) {
       headers.hasOwnProperty(h) && http.setRequestHeader(h, headers[h])
@@ -126,7 +122,7 @@
       var http = xhr()
         , method = (o.method || 'GET').toUpperCase()
         , url = (typeof o === 'string' ? o : o.url)
-        // convert non-string objects to query-string form unless o.processData is false 
+        // convert non-string objects to query-string form unless o.processData is false
         , data = o.processData !== false && o.data && typeof o.data !== 'string'
           ? reqwest.toQueryString(o.data)
           : o.data || null
@@ -193,7 +189,7 @@
         switch (type) {
         case 'json':
           try {
-            resp = win.JSON ? win.JSON.parse(r) : eval('(' + r + ')')          
+            resp = win.JSON ? win.JSON.parse(r) : eval('(' + r + ')')
           } catch(err) {
             return error(resp, 'Could not parse JSON in response', err)
           }
@@ -241,7 +237,7 @@
   }
 
   var isArray = typeof Array.isArray == 'function' ? Array.isArray : function(a) {
-    return Object.prototype.toString.call(a) == '[object Array]'
+    return a instanceof Array
   }
 
   function serial(el, cb) {
@@ -264,7 +260,7 @@
         var ch = /checkbox/i.test(el.type)
           , ra = /radio/i.test(el.type)
           , val = el.value;
-        // WebKit gives us "" instead of "on if a checkbox has no value, so correct it here
+        // WebKit gives us "" instead of "on" if a checkbox has no value, so correct it here
         (!(ch || ra) || el.checked) && cb(n, normalize(ch && val === '' ? 'on' : val))
       }
       break;
@@ -288,16 +284,17 @@
   // called with 'this'=callback to use for serial() on each element
   function eachFormElement() {
     var cb = this
+      , e, i, j
       , serializeSubtags = function(e, tags) {
         for (var i = 0; i < tags.length; i++) {
           var fa = e[byTag](tags[i])
-          for (var j = 0; j < fa.length; j++) serial(fa[j], cb)
+          for (j = 0; j < fa.length; j++) serial(fa[j], cb)
         }
       }
 
-    for (var i = 0; i < arguments.length; i++) {
-      var e = arguments[i]
-      if (/input|select|textarea/i.test(e.tagName)) serial(e, cb);
+    for (i = 0; i < arguments.length; i++) {
+      e = arguments[i]
+      if (/input|select|textarea/i.test(e.tagName)) serial(e, cb)
       serializeSubtags(e, [ 'input', 'select', 'textarea' ])
     }
   }
@@ -310,7 +307,7 @@
   // { 'name': 'value', ... } style serialization
   function serializeHash() {
     var hash = {}
-    eachFormElement.apply(function(name, value) {
+    eachFormElement.apply(function (name, value) {
       if (name in hash) {
         hash[name] && !isArray(hash[name]) && (hash[name] = [hash[name]])
         hash[name].push(value)
@@ -325,11 +322,11 @@
     eachFormElement.apply(function(name, value) {
       arr.push({name: name, value: value})
     }, arguments)
-    return arr 
+    return arr
   }
 
   reqwest.serialize = function () {
-    if (arguments.length === 0) return "";
+    if (arguments.length === 0) return ''
     var opt, fn
       , args = Array.prototype.slice.call(arguments, 0)
 
@@ -344,10 +341,10 @@
     return fn.apply(null, args)
   }
 
-  reqwest.toQueryString = function(o) {
+  reqwest.toQueryString = function (o) {
     var qs = '', i
       , enc = encodeURIComponent
-      , push = function(k, v) {
+      , push = function (k, v) {
           qs += enc(k) + '=' + enc(v) + '&'
         }
 
