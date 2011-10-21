@@ -42,11 +42,9 @@
       })
     })
 
-    // For some reason, using the .jsonp file extension didn't work
-    // in the testing suite. Using .js instead for now.
-    test('JSONP', 6, function() {
+    test('JSONP', 16, function() {
       ajax({
-        url: '/tests/fixtures/fixtures_jsonp.js?callback=?',
+        url: '/tests/fixtures/fixtures_jsonp.jsonp?callback=?',
         type: 'jsonp',
         success: function (resp) {
           ok(resp, 'received response for unique generated callback')
@@ -55,7 +53,7 @@
       })
 
       ajax({
-        url: '/tests/fixtures/fixtures_jsonp2.js?foo=bar',
+        url: '/tests/fixtures/fixtures_jsonp2.jsonp?foo=bar',
         type: 'jsonp',
         jsonpCallback: 'foo',
         success: function (resp) {
@@ -65,12 +63,58 @@
       })
 
       ajax({
-        url: '/tests/fixtures/fixtures_jsonp3.js?foo=?',
+        url: '/tests/fixtures/fixtures_jsonp3.jsonp?foo=?',
         type: 'jsonp',
         jsonpCallback: 'foo',
         success: function (resp) {
           ok(resp, 'received response for custom wildcard callback')
           ok(resp && resp.boosh == "boosh", "correctly evaluated response as JSONP with custom wildcard callback")
+        }
+      })
+
+      ajax({
+        url: '/tests/fixtures/fixtures_jsonp3.jsonp',
+        type: 'jsonp',
+        jsonpCallback: 'foo',
+        success: function (resp) {
+          ok(resp, 'received response for custom wildcard callback')
+          ok(resp && resp.boosh == "boosh", "correctly evaluated response as JSONP with custom callback not in url")
+        }
+      })
+
+      ajax({
+        url: '/tests/none.jsonp?echo&somevar=some+long+string+here',
+        type: 'jsonp',
+        jsonpCallbackName: 'yohoho',
+        success: function(resp) {
+          ok(resp, 'received response from echo callback')
+          ok(resp && resp.somevar == 'some long string here', 'correctly evaluated response as JSONP with echo callback')
+        }
+      })
+
+      ajax({
+        url: '/tests/none.jsonp?echo', // should append &somevar...
+        type: 'jsonp',
+        data: { somevar: 'some long string here', anothervar: 'yo ho ho!' },
+        success: function(resp) {
+          ok(resp, 'received response from echo callback')
+          ok(resp && resp.somevar == 'some long string here', 'correctly sent and received data object from JSONP echo (1)')
+          ok(resp && resp.anothervar == 'yo ho ho!', 'correctly sent and received data object from JSONP echo (2)')
+        }
+      })
+
+      ajax({
+        url: '/tests/none.jsonp', // should append ?echo...etc.
+        type: 'jsonp',
+        data: [
+          { name: 'somevar', value: 'some long string here' },
+          { name: 'anothervar', value: 'yo ho ho!' },
+          { name: 'echo', value: true }
+        ],
+        success: function(resp) {
+          ok(resp, 'received response from echo callback')
+          ok(resp && resp.somevar == 'some long string here', 'correctly sent and received data array from JSONP echo (1)')
+          ok(resp && resp.anothervar == 'yo ho ho!', 'correctly sent and received data array from JSONP echo (2)')
         }
       })
     })
@@ -134,7 +178,7 @@
 
     test('multiple parallel named JSONP callbacks', 8, function () {
         ajax({
-          url: '/tests/fixtures/fixtures_jsonp_multi.js?callback=reqwest_0',
+          url: '/tests/fixtures/fixtures_jsonp_multi.jsonp?callback=reqwest_0',
           type: 'jsonp',
           success: function (resp) {
             ok(resp, 'received response from call #1')
@@ -142,7 +186,7 @@
           }
         });
         ajax({
-          url: '/tests/fixtures/fixtures_jsonp_multi_b.js?callback=reqwest_0',
+          url: '/tests/fixtures/fixtures_jsonp_multi_b.jsonp?callback=reqwest_0',
           type: 'jsonp',
           success: function (resp) {
             ok(resp, 'received response from call #2')
@@ -150,7 +194,7 @@
           }
         });
         ajax({
-          url: '/tests/fixtures/fixtures_jsonp_multi_c.js?callback=reqwest_0',
+          url: '/tests/fixtures/fixtures_jsonp_multi_c.jsonp?callback=reqwest_0',
           type: 'jsonp',
           success: function (resp) {
             ok(resp, 'received response from call #2')
@@ -158,7 +202,7 @@
           }
         });
         ajax({
-          url: '/tests/fixtures/fixtures_jsonp_multi.js?callback=reqwest_0',
+          url: '/tests/fixtures/fixtures_jsonp_multi.jsonp?callback=reqwest_0',
           type: 'jsonp',
           success: function (resp) {
             ok(resp, 'received response from call #2')
