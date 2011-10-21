@@ -168,6 +168,58 @@
       })
   })
 
+  sink('JSONP Data', function (test, ok) {
+    
+    test('hash data', 2, function () {
+      ajax({
+        url: '/tests/fixtures/fixtures_jsonp.js?callback=?',
+        type: 'jsonp',
+        data: { a: 'foo', b: 'bar' },
+        success: function (resp) {
+          ok(resp, 'received response')
+          ok(resp && resp.boosh == 'boosh', 'evaluated boosh')
+        }
+      })
+    });
+
+    test('string data', 2, function () {
+      ajax({
+        url: '/tests/fixtures/fixtures_jsonp2.js?callback=?',
+        type: 'jsonp',
+        data: "foo=bar",
+        success: function (resp) {
+          ok(resp, 'received response')
+          ok(resp && resp.boosh == 'boosh', 'evaluated boosh')
+        }
+      })
+    });
+
+    test('no data', 2, function () {
+      ajax({
+        url: '/tests/fixtures/fixtures_jsonp.js?callback=?',
+        type: 'jsonp',
+        success: function (resp) {
+          ok(resp, 'received response')
+          ok(resp && resp.boosh == 'boosh', 'evaluated boosh')
+        }
+      })
+    });
+
+    test('callback var', 2, function () {
+      ajax({
+        url: '/tests/fixtures/fixtures_jsonp2.js?foo=bar',
+        type: 'jsonp',
+        jsonpCallback: 'foo',
+        data: { a: 'foo', b: 'bar' },
+        success: function (resp) {
+          ok(resp, 'received response')
+          ok(resp && resp.boosh == 'boosh', 'evaluated boosh')
+        }
+      })
+    });
+
+  });
+
   sink('Connection Object', function (test, ok) {
 
     test('setRequestHeaders', 1, function () {
