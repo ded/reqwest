@@ -76,6 +76,11 @@
   }
 
   function getRequest(o, fn, err) {
+    // convert non-string objects to query-string form unless o.processData is false
+    data = o.processData !== false && o.data && typeof o.data !== 'string'
+      ? reqwest.toQueryString(o.data)
+      : o.data || null
+
     if (o.type == 'jsonp') {
       var script = doc.createElement('script')
         , loaded = 0
@@ -86,7 +91,7 @@
 
       // Setup our script element
       script.type = 'text/javascript'
-      script.src = o.url
+      script.src = data && data.length ? (o.url + '&' + data) : o.url
       script.async = true
       if (typeof script.onreadystatechange !== 'undefined') {
           // need this for IE due to out-of-order onreadystatechange(), binding script
@@ -116,10 +121,6 @@
       var http = xhr()
         , method = (o.method || 'GET').toUpperCase()
         , url = (typeof o === 'string' ? o : o.url)
-        // convert non-string objects to query-string form unless o.processData is false
-        , data = o.processData !== false && o.data && typeof o.data !== 'string'
-          ? reqwest.toQueryString(o.data)
-          : o.data || null
 
       // if we're working on a GET request and we have data then we should append
       // query string to end of URL and not post data
