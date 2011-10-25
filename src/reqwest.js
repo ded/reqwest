@@ -1,10 +1,11 @@
 !function (name, definition) {
+  var global = Function('return this')();
   if (typeof define == 'function') define(definition)
   else if (typeof module != 'undefined') module.exports = definition()
-  else this[name] = definition()
+  else global[name] = definition()
 }('reqwest', function () {
 
-  var context = this
+  var context = Function('return this')();
     , win = window
     , doc = document
     , old = context.reqwest
