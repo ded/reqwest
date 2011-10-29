@@ -114,7 +114,7 @@
   function getRequest(o, fn, err) {
     var method = (o.method || 'GET').toUpperCase()
       , url = typeof o === 'string' ? o : o.url
-      // convert non-string objects to query-string form unless o.processData is false 
+      // convert non-string objects to query-string form unless o.processData is false
       , data = (o.processData !== false && o.data && typeof o.data !== 'string')
         ? reqwest.toQueryString(o.data)
         : (o.data || null);
@@ -126,8 +126,7 @@
       && (url = urlappend(url, data))
       && (data = null)
 
-    if (o.type == 'jsonp')
-      return handleJsonp(o, fn, err, url)
+    if (o.type == 'jsonp') return handleJsonp(o, fn, err, url)
 
     var http = xhr()
     http.open(method, url, true)
