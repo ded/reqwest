@@ -109,6 +109,9 @@
 
     // Add the script to the DOM head
     head.appendChild(script)
+
+    // Enable JSONP timeout
+    return {abort: function(){ err && err() }}
   }
 
   function getRequest(o, fn, err) {
