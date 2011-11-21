@@ -105,6 +105,10 @@ $(form).serialize() // returns query string -> x=y&...
 $(form).serialize({type:'array'}) // returns array name/value pairs -> [ { name: x, value: y}, ... ]
 $(form).serialize({type:'map'}) // returns an object representation -> { x: y, ... }
 $(form).serializeArray()
+$.toQueryString({
+    foo: 'bar'
+  , baz: 'thunk'
+}) // returns query string -> foo=bar&baz=thunk
 ```
 
 Or, get a bit fancy:
