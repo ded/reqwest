@@ -1,13 +1,22 @@
 !function (name, definition) {
+  var global = Function('return this')()
+    , old
+    
   if (typeof define == 'function') define(definition)
   else if (typeof module != 'undefined') module.exports = definition()
-  else this[name] = definition()
+  else {
+    old = global[name]
+    global[name] = definition()
+    global[name].noConflict = function () {
+      var self = global[name]
+      global[name] = old 
+      return self
+    }
+  }
 }('reqwest', function () {
 
-  var context = this
-    , win = window
+  var win = window
     , doc = document
-    , old = context.reqwest
     , twoHundo = /^20\d$/
     , byTag = 'getElementsByTagName'
     , readyState = 'readyState'
@@ -346,11 +355,6 @@
 
     // spaces should be + according to spec
     return qs.replace(/&$/, '').replace(/%20/g,'+')
-  }
-
-  reqwest.noConflict = function () {
-    context.reqwest = old
-    return this
   }
 
   return reqwest
