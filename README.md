@@ -172,7 +172,7 @@ name respectively while jQuery uses `jsonp` and `jsonpCallback` for
 these same options.
 
 
-But fear not! If you must work the jQuery/Zepto way then you Reqwest has
+But fear not! If you must work the jQuery/Zepto way then Reqwest has
 a wrapper that will remap these options for you:
 
 ```js
