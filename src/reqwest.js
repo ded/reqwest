@@ -12,10 +12,24 @@
     , byTag = 'getElementsByTagName'
     , readyState = 'readyState'
     , contentType = 'Content-Type'
+    , requestedWith = 'X-Requested-With'
     , head = doc[byTag]('head')[0]
     , uniqid = 0
     , lastValue // data stored by the most recent JSONP callback
-    , xhr = ('XMLHttpRequest' in win) ?
+    , xmlHttpRequest = 'XMLHttpRequest'
+    , defaultHeaders = {
+          contentType: 'application/x-www-form-urlencoded'
+        , accept: {
+              '*':  'text/javascript, text/html, application/xml, text/xml, */*'
+            , xml:  'application/xml, text/xml'
+            , html: 'text/html'
+            , text: 'text/plain'
+            , json: 'application/json, text/javascript'
+            , js:   'application/javascript, text/javascript'
+          }
+        , requestedWith: xmlHttpRequest
+      }
+    , xhr = (xmlHttpRequest in win) ?
         function () {
           return new XMLHttpRequest()
         } :
@@ -37,18 +51,10 @@
 
   function setHeaders(http, o) {
     var headers = o.headers || {}
-      , mimetypes= {
-            xml: "application/xml, text/xml"
-          , html: "text/html"
-          , text: "text/plain"
-          , json: "application/json, text/javascript"
-          , js: 'application/javascript, text/javascript'
-        }
-      headers.Accept = headers.Accept || mimetypes[o.type] || 'text/javascript, text/html, application/xml, text/xml, */*'
-
+    headers.Accept = headers.Accept || defaultHeaders.accept[o.type] || defaultHeaders.accept['*']
     // breaks cross-origin requests with legacy browsers
-    if (!o.crossOrigin) headers['X-Requested-With'] = headers['X-Requested-With'] || 'XMLHttpRequest'
-    headers[contentType] = headers[contentType] || 'application/x-www-form-urlencoded'
+    if (!o.crossOrigin && !headers[requestedWith]) headers[requestedWith] = defaultHeaders.requestedWith
+    if (!headers[contentType]) headers[contentType] = o.contentType || defaultHeaders.contentType
     for (var h in headers) {
       headers.hasOwnProperty(h) && http.setRequestHeader(h, headers[h])
     }
@@ -234,7 +240,6 @@
             cb(n, normalize(o.attributes.value && o.attributes.value.specified ? o.value : o.text))
         }
 
-
     // don't serialize elements that are disabled or without a name
     if (el.disabled || !n) return;
 
@@ -346,6 +351,18 @@
 
     // spaces should be + according to spec
     return qs.replace(/&$/, '').replace(/%20/g,'+')
+  }
+
+  // jQuery and Zepto compatibility, differences can be remapped here so you can call
+  // .ajax.compat(options, callback)
+  reqwest.compat = function (o, fn) {
+    if (o) {
+      o.type && (o.method = o.type) && delete o.type
+      o.dataType && (o.type = o.dataType)
+      o.jsonpCallback && (o.jsonpCallbackName = o.jsonpCallback) && delete o.jsonpCallback
+      o.jsonp && (o.jsonpCallback = o.jsonp)
+    }
+    return new Reqwest(o, fn)
   }
 
   reqwest.noConflict = function () {
