@@ -55,6 +55,22 @@ reqwest({
 
 ``` js
 reqwest({
+    url: 'path/to/json'
+  , type: 'json'
+  , method: 'post'
+  , contentType: 'application/json'
+  , headers: {
+      'X-My-Custom-Header': 'SomethingImportant'
+    }
+  , error: function (err) { }
+  , success: function (resp) {
+      qwery('#content').html(resp.content)
+    }
+})
+```
+
+``` js
+reqwest({
     url: 'path/to/data.jsonp?callback=?'
   , type: 'jsonp'
   , success: function (resp) {
@@ -68,6 +84,7 @@ reqwest({
     url: 'path/to/data.jsonp?foo=bar'
   , type: 'jsonp'
   , jsonpCallback: 'foo'
+  , jsonpCallbackName: 'bar'
   , success: function (resp) {
       qwery('#content').html(resp.content)
     }
@@ -131,5 +148,57 @@ Or, get a bit fancy:
 $('#myform input[name=myradios]').serialize({type:'map'})['myradios'] // get the selected value
 $('input[type=text],#specialthing').serialize() // turn any arbitrary set of form elements into a query string
 ```
+
+jQuery and Zepto Compatibility
+------------------------------
+There are some differences between the *Reqwest way* and the
+*jQuery/Zepto way*.
+
+### method ###
+jQuery/Zepto use `type` to specify the request method while Reqwest uses
+`method` and reserves `type` for the response data type.
+
+### dataType ###
+When using jQuery/Zepto you use the `dataType` option to specify the type
+of data to expect from the server, Reqwest uses `type`. jQuery also can
+also take a space-separated list of data types to specify the request,
+response and response-conversion types but Reqwest uses the `type`
+parameter to infer the response type and leaves conversion up to you.
+
+### JSONP ###
+Reqwest also takes optional `jsonpCallback` and `jsonpCallbackName`
+options to specify the callback query-string key and the callback function
+name respectively while jQuery uses `jsonp` and `jsonpCallback` for
+these same options.
+
+
+But fear not! If you must work the jQuery/Zepto way then you Reqwest has
+a wrapper that will remap these options for you:
+
+```js
+reqwest.compat({
+    url: 'path/to/data.jsonp?foo=bar'
+  , dataType: 'jsonp'
+  , jsonp: 'foo'
+  , jsonpCallback: 'bar'
+  , success: function (resp) {
+      qwery('#content').html(resp.content)
+    }
+})
+
+// or from Ender:
+
+$.ajax.compat({
+  ...
+})
+```
+
+If you want to install jQuery/Zepto compatibility mode as the default
+then simply place this snippet at the top of your code:
+
+```js
+$.ajax.compat && $.ender({ ajax: $.ajax.compat });
+```
+
 
 **Happy Ajaxing!**
