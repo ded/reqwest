@@ -1,12 +1,12 @@
-require('smoosh').config({
+{
   "JAVASCRIPT": {
-    "DIST_DIR": "./",
-    "reqwest": [
-      "src/copyright.js",
-      "src/reqwest.js"
+      "DIST_DIR": "./"
+    , "reqwest": [
+        "src/copyright.js"
+      , "src/reqwest.js"
     ]
-  },
-  "JSHINT_OPTS": {
+  }
+, "JSHINT_OPTS": {
       "boss": true
     , "forin": false
     , "curly": false
@@ -22,4 +22,4 @@ require('smoosh').config({
     , "asi": true
     , "laxbreak": true
   }
-}).run().build().analyze();
+}

@@ -1,0 +1,42 @@
+info it worked if it ends with ok
+verbose cli [ 'node',
+verbose cli   '/Users/dustin/.nvm/v0.6.6/bin/npm',
+verbose cli   'run-script',
+verbose cli   'boosh' ]
+info using npm@1.1.0-beta-7
+info using node@v0.6.6
+verbose config file /Users/dustin/.npmrc
+verbose config file /Users/dustin/.nvm/v0.6.6/etc/npmrc
+verbose config file /Users/dustin/.nvm/v0.6.6/lib/node_modules/npm/npmrc
+verbose caching /Users/dustin/work/reqwest/package.json
+verbose loadDefaults reqwest@0.3.3
+verbose run-script [ 'preboosh', 'boosh', 'postboosh' ]
+info preboosh reqwest@0.3.3
+info boosh reqwest@0.3.3
+verbose unsafe-perm in lifecycle true
+silly exec sh "-c" "node Makefile.js"
+silly spawning [ 'sh',
+silly spawning   [ '-c', 'node Makefile.js' ],
+silly spawning   '/Users/dustin/work/reqwest' ]
+info reqwest@0.3.3 Failed to exec boosh script
+ERR! reqwest@0.3.3 boosh: `node Makefile.js`
+ERR! `sh "-c" "node Makefile.js"` failed with 1
+ERR! 
+ERR! Failed at the reqwest@0.3.3 boosh script.
+ERR! This is most likely a problem with the reqwest package,
+ERR! not with npm itself.
+ERR! Tell the author that this fails on your system:
+ERR!     node Makefile.js
+ERR! You can get their info via:
+ERR!     npm owner ls reqwest
+ERR! There is likely additional logging output above.
+ERR! 
+ERR! System Darwin 11.2.0
+ERR! command "node" "/Users/dustin/.nvm/v0.6.6/bin/npm" "run-script" "boosh"
+ERR! cwd /Users/dustin/work/reqwest
+ERR! node -v v0.6.6
+ERR! npm -v 1.1.0-beta-7
+ERR! code ELIFECYCLE
+ERR! message reqwest@0.3.3 boosh: `node Makefile.js`
+ERR! message `sh "-c" "node Makefile.js"` failed with 1
+verbose exit [ 1, true ]
