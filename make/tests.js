@@ -14,7 +14,7 @@ var routes = {
     res.end()
   },
 
-  '(([\\w\\-\\/]+)\\.(css|js|json|jsonp|html)$)': function (req, res, m, file, ext) {
+  '(.*).(css|js|json|jsonp|html)$': function (req, res, m, file, ext) {
     res.writeHead(200, {
         'Expires': 0
       , 'Cache-Control': 'max-age=0, no-cache, no-store'
