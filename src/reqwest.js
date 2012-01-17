@@ -60,6 +60,11 @@
     }
   }
 
+  function setCredentials(http, o) {
+      if (typeof o.withCredentials !== "undefined" && typeof http.withCredentials !== "undefined")
+        http.withCredentials = !!o.withCredentials
+  }
+
   function generalCallback(data) {
     lastValue = data
   }
@@ -137,6 +142,7 @@
     var http = xhr()
     http.open(method, url, true)
     setHeaders(http, o)
+    setCredentials(http, o)
     http.onreadystatechange = handleReadyState(http, fn, err)
     o.before && o.before(http)
     http.send(data)
