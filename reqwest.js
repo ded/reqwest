@@ -5,8 +5,8 @@
   * license MIT
   */
 !function (name, definition) {
-  if (typeof define == 'function') define(definition)
-  else if (typeof module != 'undefined') module.exports = definition()
+  if (typeof module != 'undefined') module.exports = definition()
+  else if (typeof define == 'function' && define.amd) define(name, definition)
   else this[name] = definition()
 }('reqwest', function () {
 
@@ -64,6 +64,11 @@
     for (var h in headers) {
       headers.hasOwnProperty(h) && http.setRequestHeader(h, headers[h])
     }
+  }
+
+  function setCredentials(http, o) {
+      if (typeof o.withCredentials !== "undefined" && typeof http.withCredentials !== "undefined")
+        http.withCredentials = !!o.withCredentials;
   }
 
   function generalCallback(data) {
@@ -143,6 +148,7 @@
     var http = xhr()
     http.open(method, url, true)
     setHeaders(http, o)
+    setCredentials(http, o)
     http.onreadystatechange = handleReadyState(http, fn, err)
     o.before && o.before(http)
     http.send(data)
