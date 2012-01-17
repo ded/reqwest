@@ -68,7 +68,7 @@
 
   function setCredentials(http, o) {
       if (typeof o.withCredentials !== "undefined" && typeof http.withCredentials !== "undefined")
-        http.withCredentials = !!o.withCredentials;
+        http.withCredentials = !!o.withCredentials
   }
 
   function generalCallback(data) {

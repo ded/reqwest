@@ -46,19 +46,19 @@ var otherOriginRoutes = {
         'Access-Control-Allow-Credentials': 'true',
         'Content-Type': 'text/plain',
         'Set-Cookie': 'cookie=hello'
-      });
+      })
       res.end('Set a cookie!')
     },
     '/get-cookie-value': function (req, res) {
-      var cookies = req.headers.cookie;
-      var value = (cookies.indexOf('=') > -1) ? cookies.split('=')[1] : '';
+      var cookies = req.headers.cookie
+      var value = ((cookies.indexOf('=') > -1) ? cookies.split('=')[1] : '')
 
       res.writeHead(200, {
           'Access-Control-Allow-Origin': 'http://localhost:1234',
           'Access-Control-Allow-Credentials': 'true',
           'Content-Type': 'text/plain'
-      });
-      res.end(value);
+      })
+      res.end(value)
     }
 }
 

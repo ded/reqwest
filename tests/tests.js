@@ -214,7 +214,7 @@
 
   sink('Cross-origin Resource Sharing', function(test, ok) {
 
-    var supportsCors = window.XMLHttpRequest && ("withCredentials" in new window.XMLHttpRequest);
+    var supportsCors = window.XMLHttpRequest && ("withCredentials" in new window.XMLHttpRequest)
 
     test('make request to another origin', 1, function() {
       ajax({
