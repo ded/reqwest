@@ -42,7 +42,7 @@
       })
     })
 
-    test('JSONP', 16, function() {
+    test('JSONP', 18, function() {
       ajax({
         url: '/tests/fixtures/fixtures_jsonp.jsonp?callback=?',
         type: 'jsonp',
@@ -115,6 +115,17 @@
           ok(resp && resp.query, 'received response from echo callback')
           ok(resp && resp.query && resp.query.somevar == 'some long string here', 'correctly sent and received data array from JSONP echo (1)')
           ok(resp && resp.query && resp.query.anothervar == 'yo ho ho!', 'correctly sent and received data array from JSONP echo (2)')
+        }
+      })
+
+      ajax({
+        url: '/tests/none.jsonp?callback=?', // should append data and match callback correctly
+        type: 'jsonp',
+        jsonpCallbackName: 'reqwest_foo',
+        data: { foo: 'bar', boo: 'baz', echo: true },
+        success: function(resp) {
+          ok(resp && resp.query, 'received response from echo callback')
+          ok(resp && resp.query && resp.query.callback == 'reqwest_foo', 'correctly matched callback in URL')
         }
       })
     })
