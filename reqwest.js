@@ -5,8 +5,8 @@
   * license MIT
   */
 !function (name, definition) {
-  if (typeof define == 'function') define(definition)
-  else if (typeof module != 'undefined') module.exports = definition()
+  if (typeof module != 'undefined') module.exports = definition()
+  else if (typeof define == 'function' && define.amd) define(name, definition)
   else this[name] = definition()
 }('reqwest', function () {
 
@@ -78,7 +78,7 @@
     var reqId = uniqid++
       , cbkey = o.jsonpCallback || 'callback' // the 'callback' key
       , cbval = o.jsonpCallbackName || ('reqwest_' + reqId) // the 'callback' value
-      , cbreg = new RegExp('(' + cbkey + ')=(.+)(&|$)')
+      , cbreg = new RegExp('(' + cbkey + ')=(.+?)(&|$)')
       , match = url.match(cbreg)
       , script = doc.createElement('script')
       , loaded = 0
