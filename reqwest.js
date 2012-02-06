@@ -78,7 +78,7 @@
     var reqId = uniqid++
       , cbkey = o.jsonpCallback || 'callback' // the 'callback' key
       , cbval = o.jsonpCallbackName || ('reqwest_' + reqId) // the 'callback' value
-      , cbreg = new RegExp('((^|\\?|&)' + cbkey + ')=([^&]*)')
+      , cbreg = new RegExp('((^|\\?|&)' + cbkey + ')=([^&]+)')
       , match = url.match(cbreg)
       , script = doc.createElement('script')
       , loaded = 0
