@@ -76,6 +76,7 @@
       , match = url.match(cbreg)
       , script = doc.createElement('script')
       , loaded = 0
+      , self = this
 
     if (match) {
       if (match[3] === '?') {
@@ -107,6 +108,7 @@
       script.onload = script.onreadystatechange = null
       script.onclick && script.onclick()
       // Call the user callback with the last value stored and clean up values and scripts.
+      o.timeout && clearTimeout(self.timeout);
       o.success && o.success(lastValue)
       lastValue = undefined
       head.removeChild(script)
@@ -135,7 +137,7 @@
       && (url = urlappend(url, data))
       && (data = null)
 
-    if (o.type == 'jsonp') return handleJsonp(o, fn, err, url)
+    if (o.type == 'jsonp') return handleJsonp.call(this, o, fn, err, url)
 
     var http = xhr()
     http.open(method, url, true)
@@ -207,7 +209,7 @@
       complete(resp)
     }
 
-    this.request = getRequest(o, success, error)
+    this.request = getRequest.call(this, o, success, error)
   }
 
   Reqwest.prototype = {
