@@ -78,16 +78,16 @@
     var reqId = uniqid++
       , cbkey = o.jsonpCallback || 'callback' // the 'callback' key
       , cbval = o.jsonpCallbackName || ('reqwest_' + reqId) // the 'callback' value
-      , cbreg = new RegExp('(' + cbkey + ')=(.+?)(&|$)')
+      , cbreg = new RegExp('((^|\\?|&)' + cbkey + ')=([^&]*)')
       , match = url.match(cbreg)
       , script = doc.createElement('script')
       , loaded = 0
 
     if (match) {
-      if (match[2] === '?') {
-        url = url.replace(cbreg, '$1=' + cbval + '$3') // wildcard callback func name
+      if (match[3] === '?') {
+        url = url.replace(cbreg, '$1=' + cbval) // wildcard callback func name
       } else {
-        cbval = match[2] // provided callback func name
+        cbval = match[3] // provided callback func name
       }
     } else {
       url = urlappend(url, cbkey + '=' + cbval) // no callback details, add 'em
