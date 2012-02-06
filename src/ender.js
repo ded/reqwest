@@ -10,14 +10,14 @@
     , sa = integrate('serializeArray')
 
   $.ender({
-    ajax: r
+      ajax: r
     , serialize: s
     , serializeArray: sa
     , toQueryString: r.toQueryString
   })
 
   $.ender({
-    serialize: s
+      serialize: s
     , serializeArray: sa
   }, true)
 }(ender);

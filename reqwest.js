@@ -5,8 +5,8 @@
   * license MIT
   */
 !function (name, definition) {
-  if (typeof define == 'function') define(definition)
-  else if (typeof module != 'undefined') module.exports = definition()
+  if (typeof module != 'undefined') module.exports = definition()
+  else if (typeof define == 'function' && define.amd) define(name, definition)
   else this[name] = definition()
 }('reqwest', function () {
 
@@ -18,10 +18,24 @@
     , byTag = 'getElementsByTagName'
     , readyState = 'readyState'
     , contentType = 'Content-Type'
+    , requestedWith = 'X-Requested-With'
     , head = doc[byTag]('head')[0]
     , uniqid = 0
     , lastValue // data stored by the most recent JSONP callback
-    , xhr = ('XMLHttpRequest' in win) ?
+    , xmlHttpRequest = 'XMLHttpRequest'
+    , defaultHeaders = {
+          contentType: 'application/x-www-form-urlencoded'
+        , accept: {
+              '*':  'text/javascript, text/html, application/xml, text/xml, */*'
+            , xml:  'application/xml, text/xml'
+            , html: 'text/html'
+            , text: 'text/plain'
+            , json: 'application/json, text/javascript'
+            , js:   'application/javascript, text/javascript'
+          }
+        , requestedWith: xmlHttpRequest
+      }
+    , xhr = (xmlHttpRequest in win) ?
         function () {
           return new XMLHttpRequest()
         } :
@@ -43,18 +57,10 @@
 
   function setHeaders(http, o) {
     var headers = o.headers || {}
-      , mimetypes= {
-            xml: "application/xml, text/xml"
-          , html: "text/html"
-          , text: "text/plain"
-          , json: "application/json, text/javascript"
-          , js: 'application/javascript, text/javascript'
-        }
-      headers.Accept = headers.Accept || mimetypes[o.type] || 'text/javascript, text/html, application/xml, text/xml, */*'
-
+    headers.Accept = headers.Accept || defaultHeaders.accept[o.type] || defaultHeaders.accept['*']
     // breaks cross-origin requests with legacy browsers
-    if (!o.crossOrigin) headers['X-Requested-With'] = headers['X-Requested-With'] || 'XMLHttpRequest'
-    headers[contentType] = headers[contentType] || 'application/x-www-form-urlencoded'
+    if (!o.crossOrigin && !headers[requestedWith]) headers[requestedWith] = defaultHeaders.requestedWith
+    if (!headers[contentType]) headers[contentType] = o.contentType || defaultHeaders.contentType
     for (var h in headers) {
       headers.hasOwnProperty(h) && http.setRequestHeader(h, headers[h])
     }
@@ -72,16 +78,16 @@
     var reqId = uniqid++
       , cbkey = o.jsonpCallback || 'callback' // the 'callback' key
       , cbval = o.jsonpCallbackName || ('reqwest_' + reqId) // the 'callback' value
-      , cbreg = new RegExp('(' + cbkey + ')=(.+)(&|$)')
+      , cbreg = new RegExp('((^|\\?|&)' + cbkey + ')=([^&]+)')
       , match = url.match(cbreg)
       , script = doc.createElement('script')
       , loaded = 0
 
     if (match) {
-      if (match[2] === '?') {
-        url = url.replace(cbreg, '$1=' + cbval + '$3') // wildcard callback func name
+      if (match[3] === '?') {
+        url = url.replace(cbreg, '$1=' + cbval) // wildcard callback func name
       } else {
-        cbval = match[2] // provided callback func name
+        cbval = match[3] // provided callback func name
       }
     } else {
       url = urlappend(url, cbkey + '=' + cbval) // no callback details, add 'em
@@ -240,7 +246,6 @@
             cb(n, normalize(o.attributes.value && o.attributes.value.specified ? o.value : o.text))
         }
 
-
     // don't serialize elements that are disabled or without a name
     if (el.disabled || !n) return;
 
@@ -352,6 +357,18 @@
 
     // spaces should be + according to spec
     return qs.replace(/&$/, '').replace(/%20/g,'+')
+  }
+
+  // jQuery and Zepto compatibility, differences can be remapped here so you can call
+  // .ajax.compat(options, callback)
+  reqwest.compat = function (o, fn) {
+    if (o) {
+      o.type && (o.method = o.type) && delete o.type
+      o.dataType && (o.type = o.dataType)
+      o.jsonpCallback && (o.jsonpCallbackName = o.jsonpCallback) && delete o.jsonpCallback
+      o.jsonp && (o.jsonpCallback = o.jsonp)
+    }
+    return new Reqwest(o, fn)
   }
 
   reqwest.noConflict = function () {

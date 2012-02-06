@@ -13,16 +13,15 @@ var routes = {
     res.write(fs.readFileSync('./tests/tests.html', 'utf8'))
     res.end()
   },
-
-  '(([\\w\\-\\/]+)\\.(css|js|json|jsonp|html)$)': function (req, res, m, file, ext) {
+  '(([\\w\\-\\/]+)\\.(css|js|json|jsonp|html)$)': function (req, res, next, uri, file, ext) {
     res.writeHead(200, {
-      'Expires': 0
+        'Expires': 0
       , 'Cache-Control': 'max-age=0, no-cache, no-store'
       , 'Content-Type': getMime(ext)
     })
     if (req.query.echo !== undefined) {
-      ext == 'jsonp' && res.write((req.query.callback || 'echoCallback') + '(')
-      res.write(JSON.stringify(req.query))
+      ext == 'jsonp' && res.write((req.query.callback || req.query.testCallback || 'echoCallback') + '(')
+      res.write(JSON.stringify({ method: req.method, query: req.query, headers: req.headers }))
       ext == 'jsonp' && res.write(');')
     } else {
       res.write(fs.readFileSync('./' + file + '.' + ext))
