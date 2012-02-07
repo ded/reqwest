@@ -14,7 +14,7 @@
   , "devDependencies": {
       "connect": "1.8.x"
     , "mime": "1.x.x"
-    , "sink-test": "0.x.x"
+    , "sink-test": ">=0.1.2"
     , "dispatch": "0.x.x"
     , "valentine": ">=1.4.7"
   }
