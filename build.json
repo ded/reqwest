@@ -21,5 +21,6 @@
     , "whitespace": true
     , "asi": true
     , "laxbreak": true
+    , "laxcomma": true
   }
 }

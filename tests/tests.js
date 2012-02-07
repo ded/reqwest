@@ -1,57 +1,84 @@
 !function (ajax) {
-
-  var FakeXHR = function() {
+  var FakeXHR = function () {
     this.args = {}
     FakeXHR.last = this
   }
-  FakeXHR.setup = function() {
+  FakeXHR.setup = function () {
     FakeXHR.oldxhr = window['XMLHttpRequest']
     FakeXHR.oldaxo = window['ActiveXObject']
     window['XMLHttpRequest'] = FakeXHR
     window['ActiveXObject'] = FakeXHR
     FakeXHR.last = null
   }
-  FakeXHR.restore = function() {
+  FakeXHR.restore = function () {
     window['XMLHttpRequest'] = FakeXHR.oldxhr
     window['ActiveXObject'] = FakeXHR.oldaxo
   }
-  FakeXHR.prototype.methodCallCount = function(name) {
+  FakeXHR.prototype.methodCallCount = function (name) {
     return this.args[name] ? this.args[name].length : 0
   }
-  FakeXHR.prototype.methodCallArgs = function(name, i, j) {
+  FakeXHR.prototype.methodCallArgs = function (name, i, j) {
     var a = this.args[name] && this.args[name].length > i ? this.args[name][i] : null
     if (arguments.length > 2) return a && a.length > j ? a[j] : null
     return a
   }
-  v.each(['open', 'send', 'setRequestHeader' ], function(f) {
-    FakeXHR.prototype[f] = function() {
-      if (!this.args[f]) this.args[f] = [];
+  v.each(['open', 'send', 'setRequestHeader' ], function (f) {
+    FakeXHR.prototype[f] = function () {
+      if (!this.args[f]) this.args[f] = []
       this.args[f].push(arguments)
     }
   })
 
   sink('Mime Types', function (test, ok) {
-    test('JSON', 2, function() {
+    test('JSON', function (complete) {
       ajax({
         url: '/tests/fixtures/fixtures.json',
         type: 'json',
         success: function (resp) {
           ok(resp, 'received response')
           ok(resp && resp.boosh == 'boosh', 'correctly evaluated response as JSON')
+          complete()
         }
       })
     })
 
-    test('JSONP', 18, function() {
+    test('JSONP', function (complete) {
       ajax({
         url: '/tests/fixtures/fixtures_jsonp.jsonp?callback=?',
         type: 'jsonp',
         success: function (resp) {
           ok(resp, 'received response for unique generated callback')
           ok(resp && resp.boosh == "boosh", "correctly evaluated response for unique generated callback as JSONP")
+          complete()
         }
       })
+    })
 
+    test('JS', function (complete) {
+      ajax({
+        url: '/tests/fixtures/fixtures.js',
+        type: 'js',
+        success: function (resp) {
+          ok(typeof boosh !== 'undefined' && boosh == 'boosh', 'evaluated response as JavaScript')
+          complete()
+        }
+      })
+    })
+
+    test('HTML', function (complete) {
+      ajax({
+        url: '/tests/fixtures/fixtures.html',
+        type: 'html',
+        success: function (resp) {
+          ok(resp == '<p>boosh</p>', 'evaluated response as HTML')
+          complete()
+        }
+      })
+    })
+  })
+
+  sink('JSONP', function (test, ok) {
+    test('Named callback in query string', function (complete) {
       ajax({
         url: '/tests/fixtures/fixtures_jsonp2.jsonp?foo=bar',
         type: 'jsonp',
@@ -59,9 +86,12 @@
         success: function (resp) {
           ok(resp, 'received response for custom callback')
           ok(resp && resp.boosh == "boosh", "correctly evaluated response as JSONP with custom callback")
+          complete()
         }
       })
+    })
 
+    test('Unnamed callback in query string', function (complete) {
       ajax({
         url: '/tests/fixtures/fixtures_jsonp3.jsonp?foo=?',
         type: 'jsonp',
@@ -69,9 +99,12 @@
         success: function (resp) {
           ok(resp, 'received response for custom wildcard callback')
           ok(resp && resp.boosh == "boosh", "correctly evaluated response as JSONP with custom wildcard callback")
+          complete()
         }
       })
+    })
 
+    test('No callback, no query string', function (complete) {
       ajax({
         url: '/tests/fixtures/fixtures_jsonp3.jsonp',
         type: 'jsonp',
@@ -79,30 +112,39 @@
         success: function (resp) {
           ok(resp, 'received response for custom wildcard callback')
           ok(resp && resp.boosh == "boosh", "correctly evaluated response as JSONP with custom callback not in url")
+          complete()
         }
       })
+    })
 
+    test('No callback in existing query string', function (complete) {
       ajax({
         url: '/tests/none.jsonp?echo&somevar=some+long+string+here',
         type: 'jsonp',
         jsonpCallbackName: 'yohoho',
-        success: function(resp) {
+        success: function (resp) {
           ok(resp && resp.query, 'received response from echo callback')
           ok(resp && resp.query && resp.query.somevar == 'some long string here', 'correctly evaluated response as JSONP with echo callback')
+          complete()
         }
       })
+    })
 
+    test('Append data to existing query string', function (complete) {
       ajax({
         url: '/tests/none.jsonp?echo', // should append &somevar...
         type: 'jsonp',
         data: { somevar: 'some long string here', anothervar: 'yo ho ho!' },
-        success: function(resp) {
+        success: function (resp) {
           ok(resp && resp.query, 'received response from echo callback')
           ok(resp && resp.query && resp.query.somevar == 'some long string here', 'correctly sent and received data object from JSONP echo (1)')
           ok(resp && resp.query && resp.query.anothervar == 'yo ho ho!', 'correctly sent and received data object from JSONP echo (2)')
+          complete()
         }
       })
+    })
 
+    test('Generate complete query string from data', function (complete) {
       ajax({
         url: '/tests/none.jsonp', // should append ?echo...etc.
         type: 'jsonp',
@@ -111,50 +153,33 @@
           { name: 'anothervar', value: 'yo ho ho!' },
           { name: 'echo', value: true }
         ],
-        success: function(resp) {
+        success: function (resp) {
           ok(resp && resp.query, 'received response from echo callback')
           ok(resp && resp.query && resp.query.somevar == 'some long string here', 'correctly sent and received data array from JSONP echo (1)')
           ok(resp && resp.query && resp.query.anothervar == 'yo ho ho!', 'correctly sent and received data array from JSONP echo (2)')
+          complete()
         }
       })
+    })
 
+    test('Append data to query string and insert callback name', function (complete) {
       ajax({
         url: '/tests/none.jsonp?callback=?', // should append data and match callback correctly
         type: 'jsonp',
         jsonpCallbackName: 'reqwest_foo',
         data: { foo: 'bar', boo: 'baz', echo: true },
-        success: function(resp) {
+        success: function (resp) {
           ok(resp && resp.query, 'received response from echo callback')
           ok(resp && resp.query && resp.query.callback == 'reqwest_foo', 'correctly matched callback in URL')
+          complete()
         }
       })
     })
-
-    test('JS', 1, function() {
-      ajax({
-        url: '/tests/fixtures/fixtures.js',
-        type: 'js',
-        success: function (resp) {
-          ok(typeof boosh !== 'undefined' && boosh == 'boosh', 'evaluated response as JavaScript')
-        }
-      })
-    })
-
-    test('HTML', 1, function() {
-      ajax({
-        url: '/tests/fixtures/fixtures.html',
-        type: 'html',
-        success: function (resp) {
-          ok(resp == '<p>boosh</p>', 'evaluated response as HTML')
-        }
-      })
-    })
-
   })
 
   sink('Callbacks', function (test, ok) {
 
-    test('no callbacks', 1, function () {
+    test('no callbacks', function (complete) {
       var pass = true
       try {
         ajax('/tests/fixtures/fixtures.js')
@@ -162,70 +187,74 @@
         pass = false
       } finally {
         ok(pass, 'successfully doesnt fail without callback')
+        complete()
       }
     })
 
-    test('complete is called', 1, function () {
+    test('complete is called', function (complete) {
       ajax({
         url: '/tests/fixtures/fixtures.js',
         complete: function () {
           ok(true, 'called complete')
+          complete()
         }
       })
     })
 
-    test('invalid JSON sets error on resp object', 1, function() {
+    test('invalid JSON sets error on resp object', function (complete) {
       ajax({
         url: '/tests/fixtures/invalidJSON.json',
         type: 'json',
         success: function (resp) {
           ok(false, 'success callback fired')
+          complete()
         },
-        error: function(resp, msg) {
+        error: function (resp, msg) {
           ok(msg == 'Could not parse JSON in response', 'error callback fired')
+          complete()
         }
       })
     })
 
     test('multiple parallel named JSONP callbacks', 8, function () {
-        ajax({
-          url: '/tests/fixtures/fixtures_jsonp_multi.jsonp?callback=reqwest_0',
-          type: 'jsonp',
-          success: function (resp) {
-            ok(resp, 'received response from call #1')
-            ok(resp && resp.a == "a", "evaluated response from call #1 as JSONP")
-          }
-        });
-        ajax({
-          url: '/tests/fixtures/fixtures_jsonp_multi_b.jsonp?callback=reqwest_0',
-          type: 'jsonp',
-          success: function (resp) {
-            ok(resp, 'received response from call #2')
-            ok(resp && resp.b == "b", "evaluated response from call #2 as JSONP")
-          }
-        });
-        ajax({
-          url: '/tests/fixtures/fixtures_jsonp_multi_c.jsonp?callback=reqwest_0',
-          type: 'jsonp',
-          success: function (resp) {
-            ok(resp, 'received response from call #2')
-            ok(resp && resp.c == "c", "evaluated response from call #3 as JSONP")
-          }
-        });
-        ajax({
-          url: '/tests/fixtures/fixtures_jsonp_multi.jsonp?callback=reqwest_0',
-          type: 'jsonp',
-          success: function (resp) {
-            ok(resp, 'received response from call #2')
-            ok(resp && resp.a == "a", "evaluated response from call #4 as JSONP")
-          }
-        })
+      ajax({
+        url: '/tests/fixtures/fixtures_jsonp_multi.jsonp?callback=reqwest_0',
+        type: 'jsonp',
+        success: function (resp) {
+          ok(resp, 'received response from call #1')
+          ok(resp && resp.a == "a", "evaluated response from call #1 as JSONP")
+        }
       })
+      ajax({
+        url: '/tests/fixtures/fixtures_jsonp_multi_b.jsonp?callback=reqwest_0',
+        type: 'jsonp',
+        success: function (resp) {
+          ok(resp, 'received response from call #2')
+          ok(resp && resp.b == "b", "evaluated response from call #2 as JSONP")
+        }
+      })
+      ajax({
+        url: '/tests/fixtures/fixtures_jsonp_multi_c.jsonp?callback=reqwest_0',
+        type: 'jsonp',
+        success: function (resp) {
+          ok(resp, 'received response from call #2')
+          ok(resp && resp.c == "c", "evaluated response from call #3 as JSONP")
+        }
+      })
+      ajax({
+        url: '/tests/fixtures/fixtures_jsonp_multi.jsonp?callback=reqwest_0',
+        type: 'jsonp',
+        success: function (resp) {
+          ok(resp, 'received response from call #2')
+          ok(resp && resp.a == "a", "evaluated response from call #4 as JSONP")
+        }
+      })
+    })
   })
 
   sink('Connection Object', function (test, ok) {
 
-    test('setRequestHeaders', 1, function () {
+    test('setRequestHeaders', function (complete) {
       ajax({
         url: '/tests/fixtures/fixtures.html',
         data: 'foo=bar&baz=thunk',
@@ -235,11 +264,12 @@
         },
         success: function (resp) {
           ok(true, 'can post headers')
+          complete()
         }
       })
     })
 
-    test('can inspect http before send', 2, function () {
+    test('can inspect http before send', function (complete) {
       var connection = ajax({
         url: '/tests/fixtures/fixtures.js',
         method: 'post',
@@ -251,14 +281,15 @@
           // Microsoft.XMLHTTP appears not to run this async in IE6&7, it processes the request and
           // triggers success() before ajax() even returns. Perhaps a better solution would be to
           // defer the calls within handleReadyState().
-          setTimeout(function() {
+          setTimeout(function () {
             ok(connection.request.readyState == 4, 'success callback has readyState of 4')
+            complete()
           }, 0)
         }
       })
     })
 
-    test('ajax() encodes array `data`', 3, function() {
+    test('ajax() encodes array `data`', function (complete) {
       FakeXHR.setup()
       try {
        ajax({
@@ -269,12 +300,13 @@
         ok(FakeXHR.last.methodCallCount('send') == 1, 'send called')
         ok(FakeXHR.last.methodCallArgs('send', 0).length == 1, 'send called with 1 arg')
         ok(FakeXHR.last.methodCallArgs('send', 0, 0) == 'foo=bar&baz=thunk', 'send called with encoded array')
+        complete()
       } finally {
         FakeXHR.restore()
       }
     })
 
-    test('ajax() encodes hash `data`', 3, function() {
+    test('ajax() encodes hash `data`', function (complete) {
       FakeXHR.setup()
       try {
         ajax({
@@ -285,12 +317,13 @@
         ok(FakeXHR.last.methodCallCount('send') == 1, 'send called')
         ok(FakeXHR.last.methodCallArgs('send', 0).length == 1, 'send called with 1 arg')
         ok(FakeXHR.last.methodCallArgs('send', 0, 0) == 'bar=foo&thunk=baz', 'send called with encoded array')
+        complete()
       } finally {
         FakeXHR.restore()
       }
     })
 
-    test('ajax() obeys `processData`', 3, function() {
+    test('ajax() obeys `processData`', function (complete) {
       FakeXHR.setup()
       try {
         var d = { bar: 'foo', thunk: 'baz' }
@@ -303,12 +336,13 @@
         ok(FakeXHR.last.methodCallCount('send') == 1, 'send called')
         ok(FakeXHR.last.methodCallArgs('send', 0).length == 1, 'send called with 1 arg')
         ok(FakeXHR.last.methodCallArgs('send', 0, 0) === d, 'send called with exact `data` object')
+        complete()
       } finally {
         FakeXHR.restore()
       }
     })
 
-    function testXhrGetUrlAdjustment(url, data, expectedUrl) {
+    function testXhrGetUrlAdjustment(url, data, expectedUrl, complete) {
       FakeXHR.setup()
       try {
         ajax({
@@ -324,23 +358,27 @@
         ok(FakeXHR.last.methodCallCount('send') == 1, 'send called')
         ok(FakeXHR.last.methodCallArgs('send', 0).length == 1, 'send called with 1 arg')
         ok(FakeXHR.last.methodCallArgs('send', 0, 0) === null, 'send called with null')
+        complete()
       } finally {
         FakeXHR.restore()
       }
     }
 
-    test('ajax() appends GET URL with ?`data`', 8, function() {
-      testXhrGetUrlAdjustment('/tests/fixtures/fixtures.html', 'bar=foo&thunk=baz', '/tests/fixtures/fixtures.html?bar=foo&thunk=baz')
+    test('ajax() appends GET URL with ?`data`', function (complete) {
+      testXhrGetUrlAdjustment('/tests/fixtures/fixtures.html', 'bar=foo&thunk=baz', '/tests/fixtures/fixtures.html?bar=foo&thunk=baz', complete)
     })
 
-    test('ajax() appends GET URL with ?`data` (serialized object)', 8, function() {
-      testXhrGetUrlAdjustment('/tests/fixtures/fixtures.html', { bar: 'foo', thunk: 'baz' }, '/tests/fixtures/fixtures.html?bar=foo&thunk=baz')
+    test('ajax() appends GET URL with ?`data` (serialized object)', function (complete) {
+      testXhrGetUrlAdjustment('/tests/fixtures/fixtures.html', { bar: 'foo', thunk: 'baz' }, '/tests/fixtures/fixtures.html?bar=foo&thunk=baz', complete)
     })
 
-    test('ajax() appends GET URL with &`data` (serialized array)', 8, function() {
-      testXhrGetUrlAdjustment('/tests/fixtures/fixtures.html?x=y',
-        [ { name: 'bar', value: 'foo'}, {name: 'thunk', value: 'baz' } ],
-        '/tests/fixtures/fixtures.html?x=y&bar=foo&thunk=baz')
+    test('ajax() appends GET URL with &`data` (serialized array)', function (complete) {
+      testXhrGetUrlAdjustment(
+          '/tests/fixtures/fixtures.html?x=y'
+        , [ { name: 'bar', value: 'foo'}, {name: 'thunk', value: 'baz' } ]
+        , '/tests/fixtures/fixtures.html?x=y&bar=foo&thunk=baz'
+        , complete
+      )
     })
   })
 
@@ -355,81 +393,87 @@
       return resp && resp.query && resp.query[key] === expected
     }
 
-    test('standard mode default', 4, function () {
+    test('standard mode default', function (complete) {
       ajax({
           url: '/tests/none.json?echo'
-        , success: function(resp) {
+        , success: function (resp) {
             ok(methodMatch(resp, 'GET'), 'correct request method (GET)')
             ok(headerMatch(resp, 'content-type', 'application/x-www-form-urlencoded'), 'correct Content-Type request header')
             ok(headerMatch(resp, 'x-requested-with', 'XMLHttpRequest'), 'correct X-Requested-With header')
             ok(headerMatch(resp, 'accept', 'text/javascript, text/html, application/xml, text/xml, */*'), 'correct Accept header')
+            complete()
           }
       })
     })
 
-    test('standard mode custom content-type', 4, function () {
+    test('standard mode custom content-type', function (complete) {
       ajax({
           url: '/tests/none.json?echo'
         , contentType: 'yapplication/foobar'
-        , success: function(resp) {
+        , success: function (resp) {
             ok(methodMatch(resp, 'GET'), 'correct request method (GET)')
             ok(headerMatch(resp, 'content-type', 'yapplication/foobar'), 'correct Content-Type request header')
             ok(headerMatch(resp, 'x-requested-with', 'XMLHttpRequest'), 'correct X-Requested-With header')
             ok(headerMatch(resp, 'accept', 'text/javascript, text/html, application/xml, text/xml, */*'), 'correct Accept header')
+            complete()
           }
       })
     })
 
-    test('compat mode "dataType=json" headers', 4, function () {
+    test('compat mode "dataType=json" headers', function (complete) {
       ajax.compat({
           url: '/tests/none.json?echo'
         , dataType: 'json' // should map to 'type'
-        , success: function(resp) {
+        , success: function (resp) {
             ok(methodMatch(resp, 'GET'), 'correct request method (GET)')
             ok(headerMatch(resp, 'content-type', 'application/x-www-form-urlencoded'), 'correct Content-Type request header')
             ok(headerMatch(resp, 'x-requested-with', 'XMLHttpRequest'), 'correct X-Requested-With header')
             ok(headerMatch(resp, 'accept', 'application/json, text/javascript'), 'correct Accept header')
+            complete()
           }
       })
     })
 
-    test('compat mode "dataType=json" with "type=post" headers', 4, function () {
+    test('compat mode "dataType=json" with "type=post" headers', function (complete) {
       ajax.compat({
           url: '/tests/none.json?echo'
         , type: 'post'
         , dataType: 'json' // should map to 'type'
-        , success: function(resp) {
+        , success: function (resp) {
             ok(methodMatch(resp, 'POST'), 'correct request method (POST)')
             ok(headerMatch(resp, 'content-type', 'application/x-www-form-urlencoded'), 'correct Content-Type request header')
             ok(headerMatch(resp, 'x-requested-with', 'XMLHttpRequest'), 'correct X-Requested-With header')
             ok(headerMatch(resp, 'accept', 'application/json, text/javascript'), 'correct Accept header')
+            complete()
           }
       })
     })
 
-    test('compat mode "dataType=json" headers (with additional headers)', 4, function () {
+    test('compat mode "dataType=json" headers (with additional headers)', function (complete) {
       ajax.compat({
           url: '/tests/none.json?echo'
         , dataType: 'json' // should map to 'type'
         , headers: { one: 1, two: 2 } // verify that these are left intact and nothing screwey happens with headers
-        , success: function(resp) {
+        , success: function (resp) {
             ok(headerMatch(resp, 'content-type', 'application/x-www-form-urlencoded'), 'correct Content-Type request header')
             ok(headerMatch(resp, 'x-requested-with', 'XMLHttpRequest'), 'correct X-Requested-With header')
             ok(headerMatch(resp, 'accept', 'application/json, text/javascript'), 'correct Accept header')
             ok(headerMatch(resp, 'one', '1') && headerMatch(resp, 'two', '2'), 'left additional headers intact')
+            complete()
           }
       })
     })
 
-    test('compat mode "dataType=jsonp" query string', 2, function () {
+    test('compat mode "dataType=jsonp" query string', function (complete) {
       ajax.compat({
           url: '/tests/none.jsonp?echo'
         , dataType: 'jsonp'
         , jsonp: 'testCallback' // should map to jsonpCallback
         , jsonpCallback: 'foobar' // should map to jsonpCallbackName
-        , success: function(resp) {
+        , success: function (resp) {
             ok(queryMatch(resp, 'echo', ''), 'correct Content-Type request header')
             ok(queryMatch(resp, 'testCallback', 'foobar'), 'correct X-Requested-With header')
+            complete()
           }
       })
     })
@@ -496,7 +540,7 @@
     }
 
     function testFormSerialize(method, type) {
-      var expected = 'foo=bar&bar=baz&wha=1&wha=3&who=tawoo&%24escapable+name%24=escapeme&choices=two&opinions=world+peace+is+not+real';
+      var expected = 'foo=bar&bar=baz&wha=1&wha=3&who=tawoo&%24escapable+name%24=escapeme&choices=two&opinions=world+peace+is+not+real'
       ok(method, 'serialize() bound to context')
       ok((method ? method(forms[0]) : null) == expected, 'serialized form (' + type + ')')
     }
@@ -506,7 +550,7 @@
         , ths = argType === BIND_ARGS ? els : null
         , args = argType === PASS_ARGS ? els : []
 
-      if (!!options) args.push(options);
+      if (!!options) args.push(options)
 
       return method.apply(ths, args)
     }
@@ -520,8 +564,8 @@
     function testFormSerializeArray(method, type) {
       ok(method, 'serialize(..., {type:\'array\'}) bound to context')
 
-      var result = method ? method(forms[0], { type: 'array' }) : [];
-      if (!result) result = [];
+      var result = method ? method(forms[0], { type: 'array' }) : []
+      if (!result) result = []
 
       verifyFormSerializeArray(result, type)
     }
@@ -548,7 +592,7 @@
     function testMultiArgumentSerializeArray(method, type, argType) {
         ok(method, 'serialize(..., {type:\'array\'}) bound to context')
         var result = method ? executeMultiArgumentMethod(method, argType, { type: 'array' }) : []
-        if (!result) result = [];
+        if (!result) result = []
 
         ok(result.length == 3, 'serialized as array of 3')
         ok(result.length == 3 && result[0].name == 'foo' && result[0].value == 'bar', 'serialized first element (' + type + ')')
@@ -569,8 +613,8 @@
 
       ok(method, 'serialize({type:\'map\'}) bound to context')
 
-      var result = method ? method(forms[0], { type: 'map' }) : {};
-      if (!result) result = {};
+      var result = method ? method(forms[0], { type: 'map' }) : {}
+      if (!result) result = {}
 
       ok(v.keys(expected).length === v.keys(result).length, 'same number of keys (' + type + ')')
 
@@ -582,7 +626,7 @@
     function testMultiArgumentSerializeHash(method, type, argType) {
       ok(method, 'serialize({type:\'map\'}) bound to context')
       var result = method ? executeMultiArgumentMethod(method, argType, { type: 'map' }) : {}
-      if (!result) result = {};
+      if (!result) result = {}
       ok(result.foo == 'bar', 'serialized first element (' + type + ')')
       ok(result.bar == 'baz', 'serialized second element (' + type + ')')
       ok(result.choices == 'two', 'serialized third element (' + type + ')')
@@ -617,7 +661,7 @@
     var sHelper = createSerializeHelper(ok)
     sHelper.reset()
 
-    test('correctly serialize textarea', 5, function() {
+    test('correctly serialize textarea', function (complete) {
       textarea = sHelper.formElements(1, 'textarea', 0)
       // the texarea has 2 different newline styles, should come out as normalized CRLF as per forms spec
       ok('T3=%3F%0D%0AA+B%0D%0AZ' == ajax.serialize(textarea), 'serialize(textarea)')
@@ -627,25 +671,29 @@
       ok('T3' == sa.name, 'serialize(textarea, {type:\'array\'}).name')
       ok('?\r\nA B\r\nZ' == sa.value, 'serialize(textarea, {type:\'array\'}).value')
       ok('?\r\nA B\r\nZ' == ajax.serialize(textarea, { type: 'map' }).T3, 'serialize(textarea, {type:\'map\'})')
-    });
+      complete()
+    })
 
-    test('correctly serialize input[type=hidden]', 4 + 4, function() {
-        sHelper.testInput(sHelper.formElements(1, 'input', 0), 'H1', 'x', 'hidden')
-        sHelper.testInput(sHelper.formElements(1, 'input', 1), 'H2', '', 'hidden[no value]')
-    });
+    test('correctly serialize input[type=hidden]', function (complete) {
+      sHelper.testInput(sHelper.formElements(1, 'input', 0), 'H1', 'x', 'hidden')
+      sHelper.testInput(sHelper.formElements(1, 'input', 1), 'H2', '', 'hidden[no value]')
+      complete()
+    })
 
-    test('correctly serialize input[type=password]', 4 + 4, function() {
+    test('correctly serialize input[type=password]', function (complete) {
       sHelper.testInput(sHelper.formElements(1, 'input', 2), 'PWD1', 'xyz', 'password')
       sHelper.testInput(sHelper.formElements(1, 'input', 3), 'PWD2', '', 'password[no value]')
-    });
+      complete()
+    })
 
-    test('correctly serialize input[type=text]', 4 + 4 + 4, function() {
+    test('correctly serialize input[type=text]', function (complete) {
       sHelper.testInput(sHelper.formElements(1, 'input', 4), 'T1', '', 'text[no value]')
       sHelper.testInput(sHelper.formElements(1, 'input', 5), 'T2', 'YES', 'text[readonly]')
       sHelper.testInput(sHelper.formElements(1, 'input', 10), 'My Name', 'me', 'text[space name]')
-    });
+      complete()
+    })
 
-    test('correctly serialize input[type=checkbox]', 2 + 4 + 2 + 4, function() {
+    test('correctly serialize input[type=checkbox]', function (complete) {
       var cb1 = sHelper.formElements(1, 'input', 6)
         , cb2 = sHelper.formElements(1, 'input', 7)
       sHelper.testInput(cb1, 'C1', null, 'checkbox[not checked]')
@@ -655,9 +703,10 @@
       sHelper.testInput(cb2, 'C2', null, 'checkbox[no value, not checked]')
       cb2.checked = true
       sHelper.testInput(cb2, 'C2', 'on', 'checkbox[no value, checked]')
-    });
+      complete()
+    })
 
-    test('correctly serialize input[type=radio]', 2 + 4 + 2 + 4, function() {
+    test('correctly serialize input[type=radio]', function (complete) {
       var r1 = sHelper.formElements(1, 'input', 8)
         , r2 = sHelper.formElements(1, 'input', 9)
       sHelper.testInput(r1, 'R1', null, 'radio[not checked]')
@@ -666,29 +715,34 @@
       sHelper.testInput(r2, 'R1', null, 'radio[no value, not checked]')
       r2.checked = true
       sHelper.testInput(r2, 'R1', '', 'radio[no value, checked]')
-    });
+      complete()
+    })
 
-    test('correctly serialize input[type=reset]', 2, function() {
+    test('correctly serialize input[type=reset]', function (complete) {
       sHelper.testInput(sHelper.formElements(1, 'input', 11), 'rst', null, 'reset')
-    });
+      complete()
+    })
 
-    test('correctly serialize input[type=file]', 2, function() {
+    test('correctly serialize input[type=file]', function (complete) {
       sHelper.testInput(sHelper.formElements(1, 'input', 12), 'file', null, 'file')
-    });
+      complete()
+    })
 
-    test('correctly serialize input[type=submit]', 4, function() {
+    test('correctly serialize input[type=submit]', function (complete) {
       // we're only supposed to serialize a submit button if it was clicked to perform this
       // serialization: http://www.w3.org/TR/html401/interact/forms.html#h-17.13.2
       // but we'll pretend to be oblivious to this part of the spec...
       sHelper.testInput(sHelper.formElements(1, 'input', 13), 'sub', 'NO', 'submit')
-    });
+      complete()
+    })
 
-    test('correctly serialize select with no options', 2, function() {
+    test('correctly serialize select with no options', function (complete) {
       var select = sHelper.formElements(1, 'select', 0)
       sHelper.testInput(select, 'S1', null, 'select, no options')
-    });
+      complete()
+    })
 
-    test('correctly serialize select with values', 4 + 4 + 4 + 4 + 2, function() {
+    test('correctly serialize select with values', function (complete) {
       var select = sHelper.formElements(1, 'select', 1)
       sHelper.testInput(select, 'S2', 'abc', 'select option 1 (default)')
       select.selectedIndex = 1
@@ -701,9 +755,10 @@
       sHelper.testInput(select, 'S2', '', 'select option 9, value="" should yield ""')
       select.selectedIndex = -1
       sHelper.testInput(select, 'S2', null, 'select, unselected')
-    });
+      complete()
+    })
 
-    test('correctly serialize select without explicit values', 4 + 4 + 4 + 2, function() {
+    test('correctly serialize select without explicit values', function (complete) {
       var select = sHelper.formElements(1, 'select', 2)
       sHelper.testInput(select, 'S3', 'ABC', 'select option 1 (default)')
       select.selectedIndex = 1
@@ -712,9 +767,10 @@
       sHelper.testInput(select, 'S3', 'DISCO STU!', 'select option 7')
       select.selectedIndex = -1
       sHelper.testInput(select, 'S3', null, 'select, unselected')
-    });
+      complete()
+    })
 
-    test('correctly serialize select multiple', 2 + 4 + 6 + 8 + 6 + 2, function() {
+    test('correctly serialize select multiple', function (complete) {
       var select = sHelper.formElements(1, 'select', 3)
       sHelper.testInput(select, 'S4', null, 'select, unselected (default)')
       select.options[1].selected = true
@@ -728,16 +784,18 @@
       select.options[1].selected = false
       select.options[8].selected = false
       sHelper.testInput(select, 'S4', null, 'select, all unselected')
-     });
+      complete()
+     })
 
-    test('correctly serialize options', 2 + 2, function() {
+    test('correctly serialize options', function (complete) {
       var option = sHelper.formElements(1, 'select', 1).options[6]
       sHelper.testInput(option, '-', null, 'just option (with value), shouldn\'t serialize')
       var option = sHelper.formElements(1, 'select', 2).options[6]
       sHelper.testInput(option, '-', null, 'option (without value), shouldn\'t serialize')
-    });
+      complete()
+    })
 
-    test('correctly serialize disabled', 2 + 2 + 2 + 2 + 2 + 2 + 2, function() {
+    test('correctly serialize disabled', function (complete) {
       var input = sHelper.formElements(1, 'input', 14)
       sHelper.testInput(input, 'D1', null, 'disabled text input')
       input = sHelper.formElements(1, 'input', 15)
@@ -752,115 +810,135 @@
       sHelper.testInput(select, 'D6', null, 'disabled multi select')
       select = sHelper.formElements(1, 'select', 7)
       sHelper.testInput(select, 'D7', null, 'disabled multi select option')
-    });
-
-    test('serialize(form)', 2, function () {
-      sHelper.testFormSerialize(ajax.serialize, 'direct')
+      complete()
     })
 
-    test('serialize(form, {type:\'array\'})', 9, function () {
-      sHelper.testFormSerializeArray(ajax.serialize, 'direct')
-    });
+    test('serialize(form)', function (complete) {
+      sHelper.testFormSerialize(ajax.serialize, 'direct')
+      complete()
+    })
 
-    test('serialize(form, {type:\'map\'})', 9, function () {
+    test('serialize(form, {type:\'array\'})', function (complete) {
+      sHelper.testFormSerializeArray(ajax.serialize, 'direct')
+      complete()
+    })
+
+    test('serialize(form, {type:\'map\'})', function (complete) {
       sHelper.testFormSerializeHash(ajax.serialize, 'direct')
-    });
+      complete()
+    })
 
     // mainly for Ender integration, so you can do this:
     // $('input[name=T2],input[name=who],input[name=wha]').serialize()
-    test('serialize(element, element, element...)', 2, function() {
+    test('serialize(element, element, element...)', function (complete) {
       sHelper.testMultiArgumentSerialize(ajax.serialize, 'direct', PASS_ARGS)
-    });
+      complete()
+    })
 
     // mainly for Ender integration, so you can do this:
     // $('input[name=T2],input[name=who],input[name=wha]').serialize({type:'array'})
-    test('serialize(element, element, element..., {type:\'array\'})', 5, function() {
-        sHelper.testMultiArgumentSerializeArray(ajax.serialize, 'direct', PASS_ARGS)
-    });
+    test('serialize(element, element, element..., {type:\'array\'})', function (complete) {
+      sHelper.testMultiArgumentSerializeArray(ajax.serialize, 'direct', PASS_ARGS)
+      complete()
+    })
 
     // mainly for Ender integration, so you can do this:
     // $('input[name=T2],input[name=who],input[name=wha]').serialize({type:'map'})
-    test('serialize(element, element, element...)', 4, function() {
-        sHelper.testMultiArgumentSerializeHash(ajax.serialize, 'direct', PASS_ARGS)
-    });
+    test('serialize(element, element, element...)', function (complete) {
+      sHelper.testMultiArgumentSerializeHash(ajax.serialize, 'direct', PASS_ARGS)
+      complete()
+    })
 
-    test('toQueryString([{ name: x, value: y }, ... ]) name/value array', 2, function() {
+    test('toQueryString([{ name: x, value: y }, ... ]) name/value array', function (complete) {
       var arr = [ { name: 'foo', value: 'bar' }, {name: 'baz', value: ''}, { name: 'x', value: -20 }, { name: 'x', value: 20 }  ]
       ok(ajax.toQueryString(arr) == "foo=bar&baz=&x=-20&x=20", "simple")
       var arr = [ { name: 'dotted.name.intact', value: '$@%' }, { name: '$ $', value: 20 }, { name: 'leave britney alone', value: 'waa haa haa' } ]
       ok(ajax.toQueryString(arr) == "dotted.name.intact=%24%40%25&%24+%24=20&leave+britney+alone=waa+haa+haa", "escaping required")
-    });
+      complete()
+    })
 
-    test('toQueryString({name: value,...} complex object', 2, function() {
+    test('toQueryString({name: value,...} complex object', function (complete) {
       var obj = { 'foo': 'bar', 'baz': '', 'x': -20 }
       ok(ajax.toQueryString(obj) == "foo=bar&baz=&x=-20", "simple")
       var obj = { 'dotted.name.intact': '$@%', '$ $': 20, 'leave britney alone': 'waa haa haa' }
       ok(ajax.toQueryString(obj) == "dotted.name.intact=%24%40%25&%24+%24=20&leave+britney+alone=waa+haa+haa", "escaping required")
-    });
+      complete()
+    })
 
-    test('toQueryString({name: [ value1, value2 ...],...} object with arrays', 1, function() {
+    test('toQueryString({name: [ value1, value2 ...],...} object with arrays', function (complete) {
       var obj = { 'foo': 'bar', 'baz': [ '', '', 'boo!' ], 'x': [ -20, 2.2, 20 ] }
       ok(ajax.toQueryString(obj) == "foo=bar&baz=&baz=&baz=boo!&x=-20&x=2.2&x=20", "object with arrays")
-    });
+      complete()
+    })
 
-  });
+  })
 
   sink('Ender Integration', function (test, ok) {
     var sHelper = createSerializeHelper(ok)
     sHelper.reset()
 
-    test('$.ajax alias for reqwest, not bound to boosh', 1, function() {
-      ok(ender.ajax === ajax, '$.ajax is reqwest');
-    });
+    test('$.ajax alias for reqwest, not bound to boosh', 1, function () {
+      ok(ender.ajax === ajax, '$.ajax is reqwest')
+    })
 
     // sHelper.test that you can do $.serialize(form)
-    test('$.serialize(form)', 2, function() {
+    test('$.serialize(form)', function (complete) {
       sHelper.testFormSerialize(ender.serialize, 'ender')
-    });
+      complete()
+    })
 
     // sHelper.test that you can do $.serialize(form)
-    test('$.serialize(form, {type:\'array\'})', 9, function () {
+    test('$.serialize(form, {type:\'array\'})', function (complete) {
       sHelper.testFormSerializeArray(ender.serialize, 'ender')
-    });
+      complete()
+    })
 
     // sHelper.test that you can do $.serialize(form)
-    test('$.serialize(form, {type:\'map\'})', 9, function () {
+    test('$.serialize(form, {type:\'map\'})', function (complete) {
       sHelper.testFormSerializeHash(ender.serialize, 'ender')
-    });
+      complete()
+    })
 
     // sHelper.test that you can do $.serializeObject(form)
-    test('$.serializeArray(...) alias for serialize(..., {type:\'map\'}', 8, function() {
+    test('$.serializeArray(...) alias for serialize(..., {type:\'map\'}', function (complete) {
       sHelper.verifyFormSerializeArray(ender.serializeArray(document.forms[0]), 'ender')
-    });
+      complete()
+    })
 
-    test('$.serialize(element, element, element...)', 2, function() {
+    test('$.serialize(element, element, element...)', function (complete) {
       sHelper.testMultiArgumentSerialize(ender.serialize, 'ender', PASS_ARGS)
-    });
+      complete()
+    })
 
-    test('$.serialize(element, element, element..., {type:\'array\'})', 5, function() {
+    test('$.serialize(element, element, element..., {type:\'array\'})', function (complete) {
       sHelper.testMultiArgumentSerializeArray(ender.serialize, 'ender', PASS_ARGS)
-    });
+      complete()
+    })
 
-    test('$.serialize(element, element, element..., {type:\'map\'})', 4, function() {
+    test('$.serialize(element, element, element..., {type:\'map\'})', function (complete) {
       sHelper.testMultiArgumentSerializeHash(ender.serialize, 'ender', PASS_ARGS)
-    });
+      complete()
+    })
 
-    test('$(element, element, element...).serialize()', 2, function() {
+    test('$(element, element, element...).serialize()', function (complete) {
       sHelper.testMultiArgumentSerialize(ender._boosh.serialize, 'ender', BIND_ARGS)
-    });
+      complete()
+    })
 
-    test('$(element, element, element...).serialize({type:\'array\'})', 5, function() {
+    test('$(element, element, element...).serialize({type:\'array\'})', function (complete) {
       sHelper.testMultiArgumentSerializeArray(ender._boosh.serialize, 'ender', BIND_ARGS)
-    });
+      complete()
+    })
 
-    test('$(element, element, element...).serialize({type:\'map\'})', 4, function() {
+    test('$(element, element, element...).serialize({type:\'map\'})', function (complete) {
       sHelper.testMultiArgumentSerializeHash(ender._boosh.serialize, 'ender', BIND_ARGS)
-    });
+      complete()
+    })
 
-    test('$.toQueryString alias for reqwest.toQueryString, not bound to boosh', 1, function() {
-        ok(ender.toQueryString === ajax.toQueryString, '$.toQueryString is reqwest.toQueryString');
-    });
-  });
+    test('$.toQueryString alias for reqwest.toQueryString, not bound to boosh', 1, function () {
+        ok(ender.toQueryString === ajax.toQueryString, '$.toQueryString is reqwest.toQueryString')
+    })
+  })
 
   start()
 
