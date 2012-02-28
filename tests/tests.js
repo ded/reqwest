@@ -42,7 +42,7 @@
       })
     })
 
-    test('JSONP', 18, function() {
+    test('JSONP', 19, function() {
       ajax({
         url: '/tests/fixtures/fixtures_jsonp.jsonp?callback=?',
         type: 'jsonp',
@@ -126,6 +126,19 @@
         success: function(resp) {
           ok(resp && resp.query, 'received response from echo callback')
           ok(resp && resp.query && resp.query.callback == 'reqwest_foo', 'correctly matched callback in URL')
+        }
+      })
+
+      ajax({
+        url: '/tests/fixtures/fixtures_jsonp2.jsonp',
+        type: 'jsonp',
+        jsopCallbackName: 'bar',
+        timeout: 1,
+        success: function(resp) {
+          ok(false, "timeout triggered success callback after error")
+        },
+        error: function() {
+          ok(true, "timeout triggered error callback")
         }
       })
     })

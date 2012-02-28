@@ -76,6 +76,7 @@
       , match = url.match(cbreg)
       , script = doc.createElement('script')
       , loaded = 0
+      , failed = 0
       , self = this
 
     if (match) {
@@ -109,7 +110,7 @@
       script.onclick && script.onclick()
       // Call the user callback with the last value stored and clean up values and scripts.
       o.timeout && clearTimeout(self.timeout);
-      o.success && o.success(lastValue)
+      !failed && o.success && o.success(lastValue)
       lastValue = undefined
       head.removeChild(script)
       loaded = 1
@@ -119,7 +120,10 @@
     head.appendChild(script)
 
     // Enable JSONP timeout
-    return {abort: function(){ err && err() }}
+    return {abort: function(){
+        failed = 1
+        err & err()
+    }}
   }
 
   function getRequest(o, fn, err) {
