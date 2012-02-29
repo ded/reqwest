@@ -23,6 +23,9 @@
     , uniqid = 0
     , lastValue // data stored by the most recent JSONP callback
     , xmlHttpRequest = 'XMLHttpRequest'
+    , isArray = typeof Array.isArray == 'function' ? Array.isArray : function (a) {
+        return a instanceof Array
+      }
     , defaultHeaders = {
           contentType: 'application/x-www-form-urlencoded'
         , accept: {
@@ -35,7 +38,7 @@
           }
         , requestedWith: xmlHttpRequest
       }
-    , xhr = (xmlHttpRequest in win) ?
+    , xhr = win[xmlHttpRequest] ?
         function () {
           return new XMLHttpRequest()
         } :
@@ -56,12 +59,12 @@
   }
 
   function setHeaders(http, o) {
-    var headers = o.headers || {}
+    var headers = o.headers || {}, h
     headers.Accept = headers.Accept || defaultHeaders.accept[o.type] || defaultHeaders.accept['*']
     // breaks cross-origin requests with legacy browsers
     if (!o.crossOrigin && !headers[requestedWith]) headers[requestedWith] = defaultHeaders.requestedWith
     if (!headers[contentType]) headers[contentType] = o.contentType || defaultHeaders.contentType
-    for (var h in headers) {
+    for (h in headers) {
       headers.hasOwnProperty(h) && http.setRequestHeader(h, headers[h])
     }
   }
@@ -129,18 +132,19 @@
       // convert non-string objects to query-string form unless o.processData is false
       , data = (o.processData !== false && o.data && typeof o.data !== 'string')
         ? reqwest.toQueryString(o.data)
-        : (o.data || null);
+        : (o.data || null)
+      , http
 
     // if we're working on a GET request and we have data then we should append
     // query string to end of URL and not post data
-    (o.type == 'jsonp' || method == 'GET')
-      && data
-      && (url = urlappend(url, data))
-      && (data = null)
+    if ((o.type == 'jsonp' || method == 'GET') && data) {
+      url = urlappend(url, data)
+      data = null
+    }
 
     if (o.type == 'jsonp') return handleJsonp(o, fn, err, url)
 
-    var http = xhr()
+    http = xhr()
     http.open(method, url, true)
     setHeaders(http, o)
     http.onreadystatechange = handleReadyState(http, fn, err)
@@ -186,7 +190,7 @@
         case 'json':
           try {
             resp = win.JSON ? win.JSON.parse(r) : eval('(' + r + ')')
-          } catch(err) {
+          } catch (err) {
             return error(resp, 'Could not parse JSON in response', err)
           }
           break;
@@ -230,10 +234,6 @@
   // normalize newline variants according to spec -> CRLF
   function normalize(s) {
     return s ? s.replace(/\r?\n/g, '\r\n') : ''
-  }
-
-  var isArray = typeof Array.isArray == 'function' ? Array.isArray : function(a) {
-    return a instanceof Array
   }
 
   function serial(el, cb) {
@@ -369,11 +369,6 @@
       o.jsonp && (o.jsonpCallback = o.jsonp)
     }
     return new Reqwest(o, fn)
-  }
-
-  reqwest.noConflict = function () {
-    context.reqwest = old
-    return this
   }
 
   return reqwest

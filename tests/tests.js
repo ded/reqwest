@@ -942,4 +942,4 @@
 
   start()
 
-}(reqwest.noConflict())
+}(reqwest)
