@@ -43,7 +43,7 @@
   function handleReadyState(o, success, error) {
     return function () {
       if (o && o[readyState] == 4) {
-        if (twoHundo.test(o.status)) {
+        if (twoHundo.test(o.status) || o.status == 1223) {
           success(o)
         } else {
           error(o)
