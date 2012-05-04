@@ -13,7 +13,7 @@ var routes = {
     res.write(fs.readFileSync('./tests/tests.html', 'utf8'))
     res.end()
   },
-  '(([\\w\\-\\/]+)\\.(css|js|json|jsonp|html)$)': function (req, res, next, uri, file, ext) {
+  '(([\\w\\-\\/]+)\\.(css|js|json|jsonp|html|xml)$)': function (req, res, next, uri, file, ext) {
     res.writeHead(200, {
         'Expires': 0
       , 'Cache-Control': 'max-age=0, no-cache, no-store'
