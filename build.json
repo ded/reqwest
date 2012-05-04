@@ -7,20 +7,30 @@
     ]
   }
 , "JSHINT_OPTS": {
-      "boss": true
+      "predef": [ "define", "module", "ActiveXObject" ]
+    , "boss": true
+    , "bitwise": true
+    , "shadow": true
+    , "trailing": true
+    , "latedef": true
     , "forin": false
     , "curly": false
-    , "debug": false
     , "devel": false
     , "evil": true
     , "regexp": false
-    , "undef": false
+    , "undef": true
     , "sub": true
     , "white": false
     , "indent": 2
-    , "whitespace": true
+    , "trailing": true
     , "asi": true
     , "laxbreak": true
+    , "eqnull": true
+    , "browser": true
     , "laxcomma": true
+    , "proto": true
+    , "expr": true
+    , "es5": true
+    , "strict": false
   }
 }

@@ -7,7 +7,7 @@ The happs
 
     $ git clone git://github.com/ded/reqwest.git reqwest
     $ cd !$
-    $ npm install -d
+    $ npm install
     $ make
 
 API
