@@ -76,6 +76,31 @@
         }
       })
     })
+    test('XML', 4, function(){
+     ajax({
+       url:'/tests/fixtures/fixtures.xml',
+       type:'xml',
+       success:function(resp){
+         ok(resp &&resp instanceof Document, 'XML Response is a Document')
+         ok(resp && resp.documentElement && resp.documentElement.nodeName=='root', 'XML Response root is <root>')
+         ok(resp && resp.documentElement && resp.documentElement.hasChildNodes && resp.documentElement.firstChild.nodeName=='boosh' && resp.documentElement.firstChild.firstChild.nodeValue==='boosh', 'Correct XML response')
+       },
+       error:function(err){
+         ok(false, err.responseText)
+       }
+     })
+
+     ajax({
+      url:'/tests/fixtures/badfixtures.xml',
+      type:'xml',
+      success:function(resp){
+        ok(resp===null, 'No XML Response')
+      },
+      error:function(err){
+        ok(true, 'No XML Response')
+      }
+     })
+   })
   })
 
   sink('JSONP', function (test, ok) {

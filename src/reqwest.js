@@ -192,6 +192,9 @@
         case 'html':
           resp = r
           break;
+        case 'xml':
+          resp = resp.responseXML;
+          break;
         }
       }
 
