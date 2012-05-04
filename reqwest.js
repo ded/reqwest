@@ -10,10 +10,8 @@
   else this[name] = definition()
 }('reqwest', function () {
 
-  var context = this
-    , win = window
+  var win = window
     , doc = document
-    , old = context.reqwest
     , twoHundo = /^20\d$/
     , byTag = 'getElementsByTagName'
     , readyState = 'readyState'
