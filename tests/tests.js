@@ -1,3 +1,4 @@
+/*global reqwest:true, sink:true, start:true, ender:true, v:true */
 !function (ajax) {
   var FakeXHR = function () {
     this.args = {}
@@ -534,8 +535,8 @@
         ok(sameValue(sh[name], value), 'serialize(' + str + ', {type:\'map\'})')
       } else {
         // the cases where an element shouldn't show up at all, checkbox not checked for example
-        ok(sa.length == 0, 'serialize(' + str + ', {type:\'array\'}) is []')
-        ok(v.keys(sh).length == 0, 'serialize(' + str + ', {type:\'map\'}) is {}')
+        ok(sa.length === 0, 'serialize(' + str + ', {type:\'array\'}) is []')
+        ok(v.keys(sh).length === 0, 'serialize(' + str + ', {type:\'map\'}) is {}')
       }
     }
 
@@ -547,7 +548,7 @@
 
     function executeMultiArgumentMethod(method, argType, options) {
       var els = [ foo, bar, choices ]
-        , ths = argType === BIND_ARGS ? els : null
+        , ths = argType === BIND_ARGS ? ender(els) : null
         , args = argType === PASS_ARGS ? els : []
 
       if (!!options) args.push(options)
@@ -662,7 +663,7 @@
     sHelper.reset()
 
     test('correctly serialize textarea', function (complete) {
-      textarea = sHelper.formElements(1, 'textarea', 0)
+      var textarea = sHelper.formElements(1, 'textarea', 0)
       // the texarea has 2 different newline styles, should come out as normalized CRLF as per forms spec
       ok('T3=%3F%0D%0AA+B%0D%0AZ' == ajax.serialize(textarea), 'serialize(textarea)')
       var sa = ajax.serialize(textarea, { type: 'array' })
@@ -921,17 +922,17 @@
     })
 
     test('$(element, element, element...).serialize()', function (complete) {
-      sHelper.testMultiArgumentSerialize(ender._boosh.serialize, 'ender', BIND_ARGS)
+      sHelper.testMultiArgumentSerialize(ender.fn.serialize, 'ender', BIND_ARGS)
       complete()
     })
 
     test('$(element, element, element...).serialize({type:\'array\'})', function (complete) {
-      sHelper.testMultiArgumentSerializeArray(ender._boosh.serialize, 'ender', BIND_ARGS)
+      sHelper.testMultiArgumentSerializeArray(ender.fn.serialize, 'ender', BIND_ARGS)
       complete()
     })
 
     test('$(element, element, element...).serialize({type:\'map\'})', function (complete) {
-      sHelper.testMultiArgumentSerializeHash(ender._boosh.serialize, 'ender', BIND_ARGS)
+      sHelper.testMultiArgumentSerializeHash(ender.fn.serialize, 'ender', BIND_ARGS)
       complete()
     })
 
