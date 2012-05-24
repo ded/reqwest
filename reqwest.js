@@ -83,6 +83,7 @@
       , match = url.match(cbreg)
       , script = doc.createElement('script')
       , loaded = 0
+      , failed = 0
 
     if (match) {
       if (match[3] === '?') {
@@ -108,20 +109,27 @@
     }
 
     script.onload = script.onreadystatechange = function () {
-      if ((script[readyState] && script[readyState] !== 'complete' && script[readyState] !== 'loaded') || loaded) {
+      if ((script[readyState] && script[readyState] !== 'complete' && script[readyState] !== 'loaded') || loaded || failed) {
         return false
       }
       script.onload = script.onreadystatechange = null
       script.onclick && script.onclick()
       // Call the user callback with the last value stored and clean up values and scripts.
-      o.success && o.success(lastValue)
-      lastValue = undefined
+      fn(lastValue)
+      lastValue = undefineds
       head.removeChild(script)
       loaded = 1
     }
 
     // Add the script to the DOM head
     head.appendChild(script)
+    
+    // Enable JSONP timeout
+    return {abort: function(){
+        failed = 1
+        if (!loaded) head.removeChild(script)
+        err & err({}, "Request aborted", {})	
+    }}
   }
 
   function getRequest(o, fn, err) {
