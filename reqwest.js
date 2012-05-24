@@ -116,7 +116,7 @@
       script.onclick && script.onclick()
       // Call the user callback with the last value stored and clean up values and scripts.
       fn(lastValue)
-      lastValue = undefineds
+      lastValue = undefined
       head.removeChild(script)
       loaded = 1
     }
