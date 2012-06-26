@@ -167,6 +167,9 @@
     this.timeout = null
     var type = o.type || setType(this.url)
       , self = this
+      , fulfillmentHandlers = []
+      , errorHandlers = []
+      , completeHandlers = []
     fn = fn || function () {}
 
     if (o.timeout) {
@@ -175,14 +178,45 @@
       }, o.timeout)
     }
 
+    if (o.success) {
+      fulfillmentHandlers.push(function () {
+        o.success.apply(o, arguments)
+      })
+    }
+    if (o.error) {
+      errorHandlers.push(function () {
+        o.error.apply(o, arguments)
+      })
+    }
+    if (o.complete) {
+      completeHandlers.push(function () {
+        o.complete.apply(o, arguments)
+      })
+    }
+
+    this.then = function (fulfillmentHandler, errorHandler) {
+      fulfillmentHandlers.push(fulfillmentHandler)
+      errorHandlers.push(errorHandler)
+      return this
+    }
+
+    this.always = function (completeHandler) {
+      completeHandlers.push(completeHandler)
+      return this
+    }
+
     function complete(resp) {
+      var i
       o.timeout && clearTimeout(self.timeout)
       self.timeout = null
-      o.complete && o.complete(resp)
+      for (i = 0; i < completeHandlers.length; i++) {
+        completeHandlers[i](resp)
+      }
     }
 
     function success(resp) {
       var r = resp.responseText
+        , i
       if (r) {
         switch (type) {
         case 'json':
@@ -198,17 +232,24 @@
         case 'html':
           resp = r
           break;
+        case 'xml':
+          resp = resp.responseXML;
+          break;
         }
       }
 
       fn(resp)
-      o.success && o.success(resp)
-
+      for (i = 0; i < fulfillmentHandlers.length; i++) {
+        fulfillmentHandlers[i](resp)
+      }
       complete(resp)
     }
 
     function error(resp, msg, t) {
-      o.error && o.error(resp, msg, t)
+      var i
+      for (i = 0; i < errorHandlers.length; i++) {
+        errorHandlers[i](resp, msg, t)
+      }
       complete(resp)
     }
 
