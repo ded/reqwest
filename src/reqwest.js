@@ -203,6 +203,15 @@
       return this
     }
 
+    this.fail = function (errorHandler) {
+      if (erred) {
+        errorHandler(responseArgs.resp, responseArgs.msg, responseArgs.t)
+      } else {
+        errorHandlers.push(errorHandler)
+      }
+      return this
+    }
+
     this.always = function (completeHandler) {
       if (fulfilled || erred) {
         completeHandler(responseArgs.resp)
@@ -257,6 +266,7 @@
       responseArgs.resp = resp
       responseArgs.msg = msg
       responseArgs.t = t
+      erred = true
       while (errorHandlers.length > 0) {
         errorHandlers.shift()(resp, msg, t)
       }

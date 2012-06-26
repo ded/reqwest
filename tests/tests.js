@@ -291,7 +291,7 @@
         })
     })
 
-    test('success and error handlers are called', 2, function () {
+    test('success and error handlers are called', 3, function () {
       ajax({
         url: '/tests/fixtures/invalidJSON.json',
         type: 'json'
@@ -301,6 +301,15 @@
         }, function (resp, msg) {
           ok(msg == 'Could not parse JSON in response', 'error callback fired')
         })
+
+      ajax({
+        url: '/tests/fixtures/invalidJSON.json',
+        type: 'json'
+      })
+        .fail(function (resp, msg) {
+          ok(msg == 'Could not parse JSON in response', 'fail callback fired')
+        })
+
       ajax({
         url: '/tests/fixtures/fixtures.json',
         type: 'json'
@@ -327,6 +336,22 @@
               })
               .always(function () {
                 ok(true, 'complete callback called')
+              })
+          }, 1)
+        })
+    })
+
+    test('failure handlers can be added after a response has been received', function (complete) {
+      var a = ajax({
+        url: '/tests/fixtures/invalidJSON.json',
+        type: 'json'
+      })
+        .always(function () {
+          setTimeout(function () {
+            a
+              .fail(function () {
+                ok(true, 'fail callback called')
+                complete()
               })
           }, 1)
         })
