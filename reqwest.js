@@ -170,6 +170,9 @@
       , fulfillmentHandlers = []
       , errorHandlers = []
       , completeHandlers = []
+      , fulfilled = false
+      , erred = false
+      , responseArgs = {}
     fn = fn || function () {}
 
     if (o.timeout) {
@@ -195,28 +198,36 @@
     }
 
     this.then = function (fulfillmentHandler, errorHandler) {
-      fulfillmentHandlers.push(fulfillmentHandler)
-      errorHandlers.push(errorHandler)
+      if (fulfilled) {
+        fulfillmentHandler(responseArgs.resp)
+      } else if (erred) {
+        errorHandler(responseArgs.resp, responseArgs.msg, responseArgs.t)
+      } else {
+        fulfillmentHandlers.push(fulfillmentHandler)
+        errorHandlers.push(errorHandler)
+      }
       return this
     }
 
     this.always = function (completeHandler) {
-      completeHandlers.push(completeHandler)
+      if (fulfilled || erred) {
+        completeHandler(responseArgs.resp)
+      } else {
+        completeHandlers.push(completeHandler)
+      }
       return this
     }
 
     function complete(resp) {
-      var i
       o.timeout && clearTimeout(self.timeout)
       self.timeout = null
-      for (i = 0; i < completeHandlers.length; i++) {
-        completeHandlers[i](resp)
+      while (completeHandlers.length > 0) {
+        completeHandlers.shift()(resp)
       }
     }
 
     function success(resp) {
       var r = resp.responseText
-        , i
       if (r) {
         switch (type) {
         case 'json':
@@ -238,17 +249,22 @@
         }
       }
 
+      responseArgs.resp = resp
+      fulfilled = true
+
       fn(resp)
-      for (i = 0; i < fulfillmentHandlers.length; i++) {
-        fulfillmentHandlers[i](resp)
+      while (fulfillmentHandlers.length > 0) {
+        fulfillmentHandlers.shift()(resp)
       }
       complete(resp)
     }
 
     function error(resp, msg, t) {
-      var i
-      for (i = 0; i < errorHandlers.length; i++) {
-        errorHandlers[i](resp, msg, t)
+      responseArgs.resp = resp
+      responseArgs.msg = msg
+      responseArgs.t = t
+      while (errorHandlers.length > 0) {
+        errorHandlers.shift()(resp, msg, t)
       }
       complete(resp)
     }

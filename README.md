@@ -119,6 +119,25 @@ reqwest({
   })
 ```
 
+``` js
+var r = reqwest({
+    url: 'path/to/data.jsonp?foo=bar'
+  , type: 'jsonp'
+  , jsonpCallback: 'foo'
+  , success: function () {
+      setTimeout(function () {
+        r
+          .then(function (resp) {
+            qwery('#content').html(resp.content)
+          }, function (err) { })
+          .always(function (resp) {
+             qwery('#hide-this').hide()
+          })
+      }, 15)
+    }
+})
+```
+
 The Tests
 ---------
     $ npm test

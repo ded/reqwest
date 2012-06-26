@@ -291,7 +291,7 @@
         })
     })
 
-    test('success and error handlers are called', 2, function (complete) {
+    test('success and error handlers are called', 2, function () {
       ajax({
         url: '/tests/fixtures/invalidJSON.json',
         type: 'json'
@@ -309,6 +309,26 @@
           ok(true, 'success callback fired')
         }, function (resp) {
           ok(false, 'error callback fired')
+        })
+    })
+
+    test('then and always handlers can be added after a response has been received', 2, function () {
+      var a = ajax({
+        url: '/tests/fixtures/fixtures.json',
+        type: 'json'
+      })
+        .always(function () {
+          setTimeout(function () {
+            a
+              .then(function () {
+                ok(true, 'success callback called')
+              }, function () {
+                ok(false, 'error callback called')
+              })
+              .always(function () {
+                ok(true, 'complete callback called')
+              })
+          }, 1)
         })
     })
   })
