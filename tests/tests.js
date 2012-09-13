@@ -897,6 +897,12 @@
       complete()
     })
 
+    test('toQueryString({name: { nestedName: value },...} object with objects', function(complete) {
+      var obj = { 'foo': { 'bar': 'baz' }, 'x': [ { 'bar': 'baz' }, { 'boo': 'hiss' } ] }
+      ok(ajax.toQueryString(obj) == "foo%5Bbar%5D=baz&x%5B0%5D%5Bbar%5D=baz&x%5B1%5D%5Bboo%5D=hiss", "object with objects")
+      complete()
+    })
+
   })
 
   sink('Ender Integration', function (test, ok) {
