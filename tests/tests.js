@@ -893,7 +893,14 @@
 
     test('toQueryString({name: [ value1, value2 ...],...} object with arrays', function (complete) {
       var obj = { 'foo': 'bar', 'baz': [ '', '', 'boo!' ], 'x': [ -20, 2.2, 20 ] }
-      ok(ajax.toQueryString(obj) == "foo=bar&baz=&baz=&baz=boo!&x=-20&x=2.2&x=20", "object with arrays")
+      ok(ajax.toQueryString(obj, true) == "foo=bar&baz=&baz=&baz=boo!&x=-20&x=2.2&x=20", "object with arrays")
+      ok(ajax.toQueryString(obj) == "foo=bar&baz%5B%5D=&baz%5B%5D=&baz%5B%5D=boo!&x%5B%5D=-20&x%5B%5D=2.2&x%5B%5D=20")
+      complete()
+    })
+
+    test('toQueryString({name: { nestedName: value },...} object with objects', function(complete) {
+      var obj = { 'foo': { 'bar': 'baz' }, 'x': [ { 'bar': 'baz' }, { 'boo': 'hiss' } ] }
+      ok(ajax.toQueryString(obj) == "foo%5Bbar%5D=baz&x%5B0%5D%5Bbar%5D=baz&x%5B1%5D%5Bboo%5D=hiss", "object with objects")
       complete()
     })
 

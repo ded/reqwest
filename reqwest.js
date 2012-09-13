@@ -6,7 +6,7 @@
   */
 !function (name, definition) {
   if (typeof module != 'undefined') module.exports = definition()
-  else if (typeof define == 'function' && define.amd) define(name, definition)
+  else if (typeof define == 'function' && define.amd) define(definition)
   else this[name] = definition()
 }('reqwest', function () {
 
@@ -198,6 +198,9 @@
         case 'html':
           resp = r
           break;
+        case 'xml':
+          resp = resp.responseXML;
+          break;
         }
       }
 
@@ -334,27 +337,56 @@
     return fn.apply(null, args)
   }
 
-  reqwest.toQueryString = function (o) {
-    var qs = '', i
-      , enc = encodeURIComponent
-      , push = function (k, v) {
-          qs += enc(k) + '=' + enc(v) + '&'
-        }
+  reqwest.toQueryString = function(o, traditional) {
+    var prefix, i
+      , traditional = traditional || false
+      , s = []
+      , add = function(key, value) {
+          // If value is a function, invoke it and return its value
+          value = ('function' === typeof value) ? value() : (value == null ? "" : value);
+          s[s.length] = encodeURIComponent(key) + "=" + encodeURIComponent(value);
+        };
 
+    // If an array was passed in, assume that it is an array of form elements.
     if (isArray(o)) {
-      for (i = 0; o && i < o.length; i++) push(o[i].name, o[i].value)
+      for (i = 0; o && i < o.length; i++) add(o[i].name, o[i].value)
     } else {
-      for (var k in o) {
-        if (!Object.hasOwnProperty.call(o, k)) continue;
-        var v = o[k]
-        if (isArray(v)) {
-          for (i = 0; i < v.length; i++) push(k, v[i])
-        } else push(k, o[k])
+      // If traditional, encode the "old" way (the way 1.3.2 or older
+      // did it), otherwise encode params recursively.
+      for (prefix in o) {
+        buildParams(prefix, o[prefix], traditional, add);
       }
     }
 
-    // spaces should be + according to spec
-    return qs.replace(/&$/, '').replace(/%20/g,'+')
+    // Return the resulting serialization
+    return s.join("&").replace(/%20/g, "+");
+  };
+
+  function buildParams(prefix, obj, traditional, add) {
+    var name, i, v
+      , rbracket = /\[\]$/;
+
+    if (isArray(obj)) {
+      // Serialize array item.
+      for (i = 0; obj && i < obj.length; i++) {
+        v = obj[i];
+        if (traditional || rbracket.test(prefix)) {
+          // Treat each array item as a scalar.
+          add(prefix, v);
+        } else {
+          buildParams(prefix + "[" + (typeof v === "object" ? i : "") + "]", v, traditional, add);
+        }
+      }
+    } else if (obj.toString() === "[object Object]") {
+      // Serialize object item.
+      for (name in obj) {
+        buildParams(prefix + "[" + name + "]", obj[name], traditional, add);
+      }
+
+    } else {
+      // Serialize scalar item.
+      add(prefix, obj);
+    }
   }
 
   // jQuery and Zepto compatibility, differences can be remapped here so you can call
