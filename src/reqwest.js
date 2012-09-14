@@ -176,7 +176,8 @@
     }
 
     function success(resp) {
-      var r = resp.responseText
+      var r = resp.responseText,
+          xhr = resp
       if (r) {
         switch (type) {
         case 'json':
@@ -198,10 +199,10 @@
         }
       }
 
-      fn(resp)
-      o.success && o.success(resp)
+      fn(resp, xhr.status, xhr)
+      o.success && o.success(resp, xhr.status, xhr)
 
-      complete(resp)
+      complete(resp, xhr.status, xhr)
     }
 
     function error(resp, msg, t) {

@@ -99,20 +99,12 @@
     script.type = 'text/javascript'
     script.src = url
     script.async = true
-    if (typeof script.onreadystatechange !== 'undefined') {
-        // need this for IE due to out-of-order onreadystatechange(), binding script
-        // execution to an event listener gives us control over when the script
-        // is executed. See http://jaubourg.net/2010/07/loading-script-as-onclick-handler-of.html
-        script.event = 'onclick'
-        script.htmlFor = script.id = '_reqwest_' + reqId
-    }
 
     script.onload = script.onreadystatechange = function () {
       if ((script[readyState] && script[readyState] !== 'complete' && script[readyState] !== 'loaded') || loaded) {
         return false
       }
       script.onload = script.onreadystatechange = null
-      script.onclick && script.onclick()
       // Call the user callback with the last value stored and clean up values and scripts.
       o.success && o.success(lastValue)
       lastValue = undefined
