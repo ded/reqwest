@@ -70,6 +70,24 @@ reqwest({
 ```
 
 ``` js
+
+// Uses XMLHttpRequest2 credentialled requests (cookies, HTTP basic auth) if supported
+
+reqwest({
+    url: 'path/to/json'
+  , type: 'json'
+  , method: 'post'
+  , contentType: 'application/json'
+  , crossOrigin: true
+  , withCredentials: true
+  , error: function (err) { }
+  , success: function (resp) {
+      qwery('#content').html(resp.content)
+    }
+})
+```
+
+``` js
 reqwest({
     url: 'path/to/data.jsonp?callback=?'
   , type: 'jsonp'
