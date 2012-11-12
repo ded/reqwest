@@ -167,6 +167,22 @@ $('#myform input[name=myradios]').serialize({type:'map'})['myradios'] // get the
 $('input[type=text],#specialthing').serialize() // turn any arbitrary set of form elements into a query string
 ```
 
+
+RequireJs and Jam
+------------------
+Reqwest can also be used with RequireJs and can be installed via jam
+
+```
+jam install reqwest
+```
+
+```js
+define(function(require){
+  var reqwest = require('reqwest');
+});
+```
+
+
 jQuery and Zepto Compatibility
 ------------------------------
 There are some differences between the *Reqwest way* and the
