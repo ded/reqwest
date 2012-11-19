@@ -19,7 +19,7 @@
     , requestedWith = 'X-Requested-With'
     , head = doc[byTag]('head')[0]
     , uniqid = 0
-    , callbackPrefix = 'request_' + (+new Date)
+    , callbackPrefix = 'reqwest_' + (+new Date)
     , lastValue // data stored by the most recent JSONP callback
     , xmlHttpRequest = 'XMLHttpRequest'
 
