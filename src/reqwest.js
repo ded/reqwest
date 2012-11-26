@@ -13,6 +13,7 @@
     , requestedWith = 'X-Requested-With'
     , head = doc[byTag]('head')[0]
     , uniqid = 0
+    , callbackPrefix = 'reqwest_' + (+new Date)
     , lastValue // data stored by the most recent JSONP callback
     , xmlHttpRequest = 'XMLHttpRequest'
 
@@ -79,7 +80,7 @@
   function handleJsonp(o, fn, err, url) {
     var reqId = uniqid++
       , cbkey = o.jsonpCallback || 'callback' // the 'callback' key
-      , cbval = o.jsonpCallbackName || ('reqwest_' + reqId) // the 'callback' value
+      , cbval = o.jsonpCallbackName || (callbackPrefix + '_' + reqId) // the 'callback' value
       , cbreg = new RegExp('((^|\\?|&)' + cbkey + ')=([^&]+)')
       , match = url.match(cbreg)
       , script = doc.createElement('script')
