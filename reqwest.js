@@ -164,6 +164,7 @@
   function Reqwest(o, fn) {
     this.o = o
     this.fn = fn
+
     init.apply(this, arguments)
   }
 
@@ -173,10 +174,25 @@
   }
 
   function init(o, fn) {
+
     this.url = typeof o == 'string' ? o : o.url
     this.timeout = null
-    var type = o.type || setType(this.url)
-      , self = this
+
+    // whether request has been fulfilled for purpose
+    // of tracking the Promises
+    this._fulfilled = false
+    // success handlers
+    this._fulfillmentHandlers = []
+    // error handlers
+    this._errorHandlers = []
+    // complete (both success and fail) handlers
+    this._completeHandlers = []
+    this._erred = false
+    this._responseArgs = {}
+
+    var self = this
+      , type = o.type || setType(this.url)
+
     fn = fn || function () {}
 
     if (o.timeout) {
@@ -185,10 +201,30 @@
       }, o.timeout)
     }
 
+    if (o.success) {
+      this._fulfillmentHandlers.push(function () {
+        o.success.apply(o, arguments)
+      })
+    }
+
+    if (o.error) {
+      this._errorHandlers.push(function () {
+        o.error.apply(o, arguments)
+      })
+    }
+
+    if (o.complete) {
+      this._completeHandlers.push(function () {
+        o.complete.apply(o, arguments)
+      })
+    }
+
     function complete(resp) {
       o.timeout && clearTimeout(self.timeout)
       self.timeout = null
-      o.complete && o.complete(resp)
+      while (self._completeHandlers.length > 0) {
+        self._completeHandlers.shift()(resp)
+      }
     }
 
     function success(resp) {
@@ -214,14 +250,24 @@
         }
       }
 
+      self._responseArgs.resp = resp
+      self._fulfilled = true
       fn(resp)
-      o.success && o.success(resp)
+      while (self._fulfillmentHandlers.length > 0) {
+        self._fulfillmentHandlers.shift()(resp)
+      }
 
       complete(resp)
     }
 
     function error(resp, msg, t) {
-      o.error && o.error(resp, msg, t)
+      self._responseArgs.resp = resp
+      self._responseArgs.msg = msg
+      self._responseArgs.t = t
+      self._erred = true
+      while (self._errorHandlers.length > 0) {
+        self._errorHandlers.shift()(resp, msg, t)
+      }
       complete(resp)
     }
 
@@ -235,6 +281,50 @@
 
   , retry: function () {
       init.call(this, this.o, this.fn)
+    }
+
+    /**
+     * Small deviation from the Promises A CommonJs specification
+     * http://wiki.commonjs.org/wiki/Promises/A
+     */
+
+    /**
+     * `then` will execute upon successful requests
+     */
+  , then: function (success, fail) {
+      if (this._fulfilled) {
+        success(this._responseArgs.resp)
+      } else if (this._erred) {
+        fail(this._responseArgs.resp, this._responseArgs.msg, this._responseArgs.t)
+      } else {
+        this._fulfillmentHandlers.push(success)
+        this._errorHandlers.push(fail)
+      }
+      return this
+    }
+
+    /**
+     * `always` will execute whether the request succeeds or fails
+     */
+  , always: function (fn) {
+      if (this._fulfilled || this._erred) {
+        fn(this._responseArgs.resp)
+      } else {
+        this._completeHandlers.push(fn)
+      }
+      return this
+    }
+
+    /**
+     * `fail` will execute when the request fails
+     */
+  , fail: function (fn) {
+      if (this._erred) {
+        fn(this._responseArgs.resp, this._responseArgs.msg, this._responseArgs.t)
+      } else {
+        this._errorHandlers.push(fn)
+      }
+      return this
     }
   }
 
