@@ -92,6 +92,7 @@
       , match = url.match(cbreg)
       , script = doc.createElement('script')
       , loaded = 0
+      , isIE10 = navigator.userAgent.indexOf('MSIE 10.0') !== -1
 
     if (match) {
       if (match[3] === '?') {
@@ -108,17 +109,19 @@
     script.type = 'text/javascript'
     script.src = url
     script.async = true
-    if (typeof script.onreadystatechange !== 'undefined') {
+    if (typeof script.onreadystatechange !== 'undefined' && !isIE10) {
       // need this for IE due to out-of-order onreadystatechange(), binding script
       // execution to an event listener gives us control over when the script
       // is executed. See http://jaubourg.net/2010/07/loading-script-as-onclick-handler-of.html
+      //
+      // if this hack is used in IE10 jsonp callback are never called
       script.event = 'onclick'
       script.htmlFor = script.id = '_reqwest_' + reqId
     }
 
     script.onload = script.onreadystatechange = function () {
       if ((script[readyState] && script[readyState] !== 'complete' && script[readyState] !== 'loaded') || loaded) {
-        return false
+        return false;
       }
       script.onload = script.onreadystatechange = null
       script.onclick && script.onclick()
