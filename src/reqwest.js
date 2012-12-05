@@ -115,7 +115,7 @@
 
     script.onload = script.onreadystatechange = function () {
       if ((script[readyState] && script[readyState] !== 'complete' && script[readyState] !== 'loaded') || loaded) {
-        return false;
+        return false
       }
       script.onload = script.onreadystatechange = null
       script.onclick && script.onclick()
