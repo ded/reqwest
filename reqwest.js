@@ -5,7 +5,7 @@
   * license MIT
   */
 !function (name, definition) {
-  if (typeof module != 'undefined') module.exports = definition()
+  if (typeof module != 'undefined' && module.exports) module.exports = definition()
   else if (typeof define == 'function' && define.amd) define(definition)
   else this[name] = definition()
 }('reqwest', function () {
@@ -121,7 +121,7 @@
 
     script.onload = script.onreadystatechange = function () {
       if ((script[readyState] && script[readyState] !== 'complete' && script[readyState] !== 'loaded') || loaded) {
-        return false;
+        return false
       }
       script.onload = script.onreadystatechange = null
       script.onclick && script.onclick()
