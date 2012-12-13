@@ -49,6 +49,7 @@
   function handleReadyState(o, success, error) {
     return function () {
       if (o && o[readyState] == 4) {
+        o.onreadystatechange = undefined;
         if (twoHundo.test(o.status)) {
           success(o)
         } else {
