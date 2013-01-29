@@ -1111,6 +1111,34 @@
           }, 1)
         })
     })
+
+  })
+
+  sink('Timeout', function (test, ok) {
+    test('xmlHttpRequest', function (complete) {
+      ajax({
+        url: '/tests/timeout',
+        type: 'json',
+        timeout:1000,
+        error: function (err) {
+          ok(err, 'received error response')
+          ok(err && err.status == 0, 'correctly caught timeout')
+          complete()
+        }
+      })
+    })
+    
+    test('jsonpRequest', function (complete) {
+      ajax({
+        url: '/tests/timeout',
+        type: 'jsonp',
+        timeout: 1000,
+        error: function (err) {
+          ok(err, 'received error response')
+          complete()
+        }
+      })
+    })
   })
 
   start()
