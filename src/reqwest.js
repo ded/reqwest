@@ -133,13 +133,15 @@
     
     
     // Enable JSONP timeout	
-    return {abort: function(){
-      script.onload = script.onreadystatechange = null
-      o.error && o.error({}, 'Request is aborted: timeout', {})
-      lastValue = undefined
-      head.removeChild(script)
-      loaded = 1
-    }}
+    return {
+      abort: function () {
+        script.onload = script.onreadystatechange = null
+        o.error && o.error({}, 'Request is aborted: timeout', {})
+        lastValue = undefined
+        head.removeChild(script)
+        loaded = 1
+      }
+    }
   }
 
   function getRequest(o, fn, err) {
