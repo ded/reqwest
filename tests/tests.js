@@ -38,6 +38,39 @@
         return FakeXHR
       }())
 
+  sink('Setup', function (test, ok, before, after) {
+    before(function () {
+      ajax.ajaxSetup({
+        dataFilter: function (resp, type) {
+          // example filter to prevent json hijacking
+          return resp.substring('])}while(1);</x>'.length)
+        }
+      })
+    })
+    after(function () {
+      ajax.ajaxSetup({
+        // reset to original data filter
+        dataFilter: function (resp, type) {
+          return resp
+        }
+      })
+    })
+    test('dataFilter', function (complete) {
+      ajax({
+          url: '/tests/fixtures/fixtures_with_prefix.json'
+        , type: 'json'
+        , success: function (resp) {
+            ok(resp, 'received response')
+            ok(
+                resp && resp.boosh == 'boosh'
+              , 'correctly evaluated response as JSON'
+            )
+            complete()
+          }
+      })
+    })
+  })
+
   sink('Mime Types', function (test, ok) {
     test('JSON', function (complete) {
       ajax({
@@ -1604,7 +1637,7 @@
           }
       })
     })
-    
+
     test('jsonpRequest', function (complete) {
       var ts = +new Date()
       ajax({

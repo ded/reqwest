@@ -44,8 +44,14 @@
         : function () {
             return new ActiveXObject('Microsoft.XMLHTTP')
           }
+    , globalSetupOptions = {
+        dataFilter: function (data, type) {
+          console.log('running in datafilter with data', data)
+          return data
+        }
+      }
 
-  function handleReadyState (r, success, error) {
+  function handleReadyState(r, success, error) {
     return function () {
       // use _aborted to mitigate against IE err c00c023f
       // (can't read props on aborted request objects)
@@ -60,7 +66,7 @@
     }
   }
 
-  function setHeaders (http, o) {
+  function setHeaders(http, o) {
     var headers = o.headers || {}
       , h
 
@@ -75,13 +81,13 @@
       headers.hasOwnProperty(h) && http.setRequestHeader(h, headers[h])
   }
 
-  function setCredentials (http, o) {
+  function setCredentials(http, o) {
     if (typeof o.withCredentials !== 'undefined' && typeof http.withCredentials !== 'undefined') {
       http.withCredentials = !!o.withCredentials
     }
   }
 
-  function generalCallback (data) {
+  function generalCallback(data) {
     lastValue = data
   }
 
@@ -89,7 +95,7 @@
     return url + (/\?/.test(url) ? '&' : '?') + s
   }
 
-  function handleJsonp (o, fn, err, url) {
+  function handleJsonp(o, fn, err, url) {
     var reqId = uniqid++
       , cbkey = o.jsonpCallback || 'callback' // the 'callback' key
       , cbval = o.jsonpCallbackName || reqwest.getcallbackPrefix(reqId)
@@ -153,7 +159,7 @@
     }
   }
 
-  function getRequest (fn, err) {
+  function getRequest(fn, err) {
     var o = this.o
       , method = (o.method || 'GET').toUpperCase()
       , url = typeof o === 'string' ? o : o.url
@@ -182,19 +188,19 @@
     return http
   }
 
-  function Reqwest (o, fn) {
+  function Reqwest(o, fn) {
     this.o = o
     this.fn = fn
 
     init.apply(this, arguments)
   }
 
-  function setType (url) {
+  function setType(url) {
     var m = url.match(/\.(json|jsonp|html|xml)(\?|$)/)
     return m ? m[1] : 'js'
   }
 
-  function init (o, fn) {
+  function init(o, fn) {
 
     this.url = typeof o == 'string' ? o : o.url
     this.timeout = null
@@ -249,7 +255,9 @@
     }
 
     function success (resp) {
-      var r = resp.responseText
+      // use global data filter on response text
+      var filteredResponse = globalSetupOptions.dataFilter(resp.responseText, type)
+      var r = resp.responseText = filteredResponse
       if (r) {
         switch (type) {
         case 'json':
@@ -286,7 +294,7 @@
       complete(resp)
     }
 
-    function error (resp, msg, t) {
+    function error(resp, msg, t) {
       self._responseArgs.resp = resp
       self._responseArgs.msg = msg
       self._responseArgs.t = t
@@ -355,16 +363,16 @@
     }
   }
 
-  function reqwest (o, fn) {
+  function reqwest(o, fn) {
     return new Reqwest(o, fn)
   }
 
   // normalize newline variants according to spec -> CRLF
-  function normalize (s) {
+  function normalize(s) {
     return s ? s.replace(/\r?\n/g, '\r\n') : ''
   }
 
-  function serial (el, cb) {
+  function serial(el, cb) {
     var n = el.name
       , t = el.tagName.toLowerCase()
       , optCb = function (o) {
@@ -406,7 +414,7 @@
   // collect up all form elements found from the passed argument elements all
   // the way down to child elements; pass a '<form>' or form fields.
   // called with 'this'=callback to use for serial() on each element
-  function eachFormElement () {
+  function eachFormElement() {
     var cb = this
       , e, i
       , serializeSubtags = function (e, tags) {
@@ -425,12 +433,12 @@
   }
 
   // standard query string style serialization
-  function serializeQueryString () {
+  function serializeQueryString() {
     return reqwest.toQueryString(reqwest.serializeArray.apply(null, arguments))
   }
 
   // { 'name': 'value', ... } style serialization
-  function serializeHash () {
+  function serializeHash() {
     var hash = {}
     eachFormElement.apply(function (name, value) {
       if (name in hash) {
@@ -504,6 +512,13 @@
       o.jsonp && (o.jsonpCallback = o.jsonp)
     }
     return new Reqwest(o, fn)
+  }
+
+  reqwest.ajaxSetup = function (options) {
+    options = options || {}
+    for (var k in options) {
+      globalSetupOptions[k] = options[k]
+    }
   }
 
   return reqwest
