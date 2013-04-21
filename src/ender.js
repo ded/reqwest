@@ -16,6 +16,7 @@
     , serialize: r.serialize
     , serializeArray: r.serializeArray
     , toQueryString: r.toQueryString
+    , ajaxSetup: r.ajaxSetup
   })
 
   $.ender({
