@@ -45,8 +45,7 @@
             return new ActiveXObject('Microsoft.XMLHTTP')
           }
     , globalSetupOptions = {
-        dataFilter: function (data, type) {
-          console.log('running in datafilter with data', data)
+        dataFilter: function (data) {
           return data
         }
       }
@@ -257,7 +256,7 @@
     function success (resp) {
       // use global data filter on response text
       var filteredResponse = globalSetupOptions.dataFilter(resp.responseText, type)
-      var r = resp.responseText = filteredResponse
+        , r = resp.responseText = filteredResponse
       if (r) {
         switch (type) {
         case 'json':
@@ -522,4 +521,4 @@
   }
 
   return reqwest
-})
+});

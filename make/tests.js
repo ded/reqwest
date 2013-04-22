@@ -27,7 +27,7 @@ var routes = {
         delayed.pipe(res)
       }, 2000)
   },
-  '(([\\w\\-\\/]+)\\.(css|js|json|jsonp|html|xml)$)': function (req, res, next, uri, file, ext) {
+  '(([\\w\\-\\/\\.]+)\\.(css|js|json|jsonp|html|xml)$)': function (req, res, next, uri, file, ext) {
     res.writeHead(200, {
         'Expires': 0
       , 'Cache-Control': 'max-age=0, no-cache, no-store'
@@ -72,7 +72,7 @@ var otherOriginRoutes = {
         cookies[ parts[ 0 ].trim() ] = ( parts[ 1 ] || '' ).trim()
       })
       value = cookies.cookie
-      
+
       res.writeHead(200, {
           'Access-Control-Allow-Origin': req.headers.origin,
           'Access-Control-Allow-Credentials': 'true',
