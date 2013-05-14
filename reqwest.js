@@ -184,7 +184,7 @@
     if (o.type == 'jsonp') return handleJsonp(o, fn, err, url)
 
     http = xhr()
-    http.open(method, url, true)
+    http.open(method, url, this.async)
     setHeaders(http, o)
     setCredentials(http, o)
     http.onreadystatechange = handleReadyState(this, fn, err)
@@ -209,6 +209,7 @@
 
     this.url = typeof o == 'string' ? o : o.url
     this.timeout = null
+    this.async = true
 
     // whether request has been fulfilled for purpose
     // of tracking the Promises
@@ -231,6 +232,10 @@
       this.timeout = setTimeout(function () {
         self.abort()
       }, o.timeout)
+    }
+
+    if (o.async === false) {
+      this.async = false
     }
 
     if (o.success) {

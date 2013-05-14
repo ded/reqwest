@@ -501,6 +501,30 @@
       })
     })
 
+    test('can send request synchronously', function(complete) {
+      FakeXHR.setup()
+      try {
+        ajax({
+            url: '/tests/fixtures/fixtures.js'
+          , method: 'post'
+          , type: 'js'
+          , async: false
+        })
+        ok(FakeXHR.last.methodCallCount('open') == 1, 'open called')
+        ok(
+            FakeXHR.last.methodCallArgs('open', 0).length == 3
+          , 'open called with 3 args'
+        )
+        ok(
+            FakeXHR.last.methodCallArgs('open', 0, 2) == false
+          , 'open called with async set to false'
+        )
+        complete()
+      } finally {
+        FakeXHR.restore()
+      }
+    })
+
     test('ajax() encodes array `data`', function (complete) {
       FakeXHR.setup()
       try {
