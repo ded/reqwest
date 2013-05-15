@@ -184,7 +184,7 @@
     if (o.type == 'jsonp') return handleJsonp(o, fn, err, url)
 
     http = xhr()
-    http.open(method, url, true)
+    http.open(method, url, o.async === false ? false : true)
     setHeaders(http, o)
     setCredentials(http, o)
     http.onreadystatechange = handleReadyState(this, fn, err)
