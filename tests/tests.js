@@ -316,6 +316,17 @@
 
   sink('Callbacks', function (test, ok) {
 
+    test('sync version', function (done) {
+      var r = ajax({
+        method: 'get'
+      , url: '/tests/fixtures/fixtures.json'
+      , type: 'json'
+      , async: false
+      })
+      ok(eval('(' + r.request.response + ')').boosh == 'boosh', 'can make sync calls')
+      done()
+    })
+
     test('no callbacks', function (complete) {
       var pass = true
       try {
