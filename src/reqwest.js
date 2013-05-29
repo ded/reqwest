@@ -256,7 +256,10 @@
     function success (resp) {
       // use global data filter on response text
       var filteredResponse = globalSetupOptions.dataFilter(resp.responseText, type)
-        , r = resp.responseText = filteredResponse
+        , r =  filteredResponse;
+        try{
+          resp.responseText = r;
+        } catch(e){}
       if (r) {
         switch (type) {
         case 'json':
