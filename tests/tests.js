@@ -413,6 +413,41 @@
           }
       })
     })
+
+    test('JSONP also supports success promises', function (complete) {
+      ajax({
+          url: '/tests/none.jsonp?echo'
+        , type: 'jsonp'
+        , success: function (resp) {
+            ok(resp, 'received response in constructor success callback')
+          }
+      })
+        .then(function (resp) {
+            ok(resp, 'received response in promise success callback')
+        })
+        .then(function (resp) {
+            ok(resp, 'received response in second promise success callback')
+            complete()
+        })
+    })
+
+    test('JSONP also supports error promises', function (complete) {
+      ajax({
+          url: '/tests/timeout/'
+        , type: 'jsonp'
+        , error: function (err) {
+            ok(err, 'received error response in constructor error callback')
+          }
+      })
+        .fail(function (err) {
+            ok(err, 'received error response in promise error callback')
+        })
+        .fail(function (err) {
+            ok(err, 'received error response in second promise error callback')
+            complete()
+        })
+        .abort()
+    })
   })
 
   if (window.XMLHttpRequest
