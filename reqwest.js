@@ -143,7 +143,7 @@
       script.onload = script.onreadystatechange = null
       script.onclick && script.onclick()
       // Call the user callback with the last value stored and clean up values and scripts.
-      o.success && o.success(lastValue)
+      fn(lastValue)
       lastValue = undefined
       head.removeChild(script)
       loaded = 1
@@ -156,7 +156,7 @@
     return {
       abort: function () {
         script.onload = script.onreadystatechange = null
-        o.error && o.error({}, 'Request is aborted: timeout', {})
+        err({}, 'Request is aborted: timeout', {})
         lastValue = undefined
         head.removeChild(script)
         loaded = 1
