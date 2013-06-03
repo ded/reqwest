@@ -448,6 +448,7 @@
         })
         .abort()
     })
+
   })
 
   if (window.XMLHttpRequest
@@ -1656,7 +1657,23 @@
         })
     })
 
+    test('.then success and fail are optional parameters', 1, function () {
+      try {
+        ajax({
+            url: '/tests/fixtures/invalidJSON.json'
+          , type: 'json'
+        })
+          .then()
+      } catch (ex) {
+        ok(false, '.then() parameters should be optional')
+      } finally {
+        ok(true, 'passed .then() optional parameters')
+      }
+    })
+
   })
+
+
 
   sink('Timeout', function (test, ok) {
     test('xmlHttpRequest', function (complete) {

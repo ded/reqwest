@@ -326,6 +326,8 @@
      * `then` will execute upon successful requests
      */
   , then: function (success, fail) {
+      success = success || function () {}
+      fail = fail || function () {}
       if (this._fulfilled) {
         success(this._responseArgs.resp)
       } else if (this._erred) {
