@@ -39,10 +39,10 @@
       }
 
     , xhr = function(o) {
-        if (typeof o.withCredentials !== 'undefined' && !!o.withCredentials === true && win[xDomainRequest]) {
-          return new XMLHttpRequest();
-        } else if (win[xmlHttpRequest]) {
+        if (typeof o.crossOrigin !== 'undefined' && !!o.crossOrigin === true && win[xDomainRequest]) {
           return new XDomainRequest();
+        } else if (win[xmlHttpRequest]) {
+          return new XMLHttpRequest();
         } else {
           return new ActiveXObject('Microsoft.XMLHTTP');
         }
@@ -80,7 +80,7 @@
     if (!o.crossOrigin && !headers[requestedWith]) headers[requestedWith] = defaultHeaders.requestedWith
     if (!headers[contentType]) headers[contentType] = o.contentType || defaultHeaders.contentType
     for (h in headers)
-      headers.hasOwnProperty(h) && http.setRequestHeader(h, headers[h])
+      headers.hasOwnProperty(h) && 'setRequestHeader' in http && http.setRequestHeader(h, headers[h])
   }
 
   function setCredentials(http, o) {
@@ -184,7 +184,12 @@
     http.open(method, url, o.async === false ? false : true)
     setHeaders(http, o)
     setCredentials(http, o)
-    http.onreadystatechange = handleReadyState(this, fn, err)
+    if (win[xDomainRequest] && http instanceof win[xDomainRequest]) {
+        http.onload = fn;
+        http.onerror = err;
+    } else {
+      http.onreadystatechange = handleReadyState(this, fn, err)
+    }
     o.before && o.before(http)
     http.send(data)
     return http
@@ -257,6 +262,7 @@
     }
 
     function success (resp) {
+      resp = (type !== 'jsonp') ? self.request : resp;
       // use global data filter on response text
       var filteredResponse = globalSetupOptions.dataFilter(resp.responseText, type)
         , r = resp.responseText = filteredResponse
@@ -292,7 +298,6 @@
       while (self._fulfillmentHandlers.length > 0) {
         self._fulfillmentHandlers.shift()(resp)
       }
-
       complete(resp)
     }
 
