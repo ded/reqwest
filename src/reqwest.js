@@ -39,9 +39,9 @@
       }
 
     , xhr = function(o) {
-        if (win[xmlHttpRequest]) {
+        if (typeof o.withCredentials !== 'undefined' && !!o.withCredentials === true && win[xDomainRequest]) {
           return new XMLHttpRequest();
-        } else if (typeof o.withCredentials !== 'undefined' && !!o.withCredentials === true && win[xDomainRequest]) {
+        } else if (win[xmlHttpRequest]) {
           return new XDomainRequest();
         } else {
           return new ActiveXObject('Microsoft.XMLHTTP');
