@@ -39,8 +39,15 @@
       }
 
     , xhr = function(o) {
-        if (typeof o.crossOrigin !== 'undefined' && !!o.crossOrigin === true && win[xDomainRequest]) {
-          return new XDomainRequest();
+        // is it x-domain
+        if (typeof o.crossOrigin !== 'undefined' && !!o.crossOrigin === true) {
+          if (win[xmlHttpRequest] && 'withCredentials' in new XMLHttpRequest()) {
+            return new XMLHttpRequest();
+          } else if (win[xDomainRequest]) {
+            return new XDomainRequest();
+          } else {
+            throw new Exception('Browser unable to handle cross-origin requests');
+          }
         } else if (win[xmlHttpRequest]) {
           return new XMLHttpRequest();
         } else {
