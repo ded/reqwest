@@ -46,7 +46,7 @@
           } else if (win[xDomainRequest]) {
             return new XDomainRequest();
           } else {
-            throw new Exception('Browser unable to handle cross-origin requests');
+            throw new Exception('Browser does not support cross-origin requests');
           }
         } else if (win[xmlHttpRequest]) {
           return new XMLHttpRequest();
