@@ -16,6 +16,7 @@
     , callbackPrefix = 'reqwest_' + (+new Date())
     , lastValue // data stored by the most recent JSONP callback
     , xmlHttpRequest = 'XMLHttpRequest'
+    , xDomainRequest = 'XDomainRequest'
     , noop = function () {}
 
     , isArray = typeof Array.isArray == 'function'
@@ -37,13 +38,15 @@
           }
       }
 
-    , xhr = win[xmlHttpRequest]
-        ? function () {
-            return new XMLHttpRequest()
-          }
-        : function () {
-            return new ActiveXObject('Microsoft.XMLHTTP')
-          }
+    , xhr = function(o) {
+        if (win[xmlHttpRequest]) {
+          return new XMLHttpRequest();
+        } else if (typeof o.withCredentials !== 'undefined' && !!o.withCredentials === true && win[xDomainRequest]) {
+          return new XDomainRequest();
+        } else {
+          return new ActiveXObject('Microsoft.XMLHTTP');
+        }
+      }
     , globalSetupOptions = {
         dataFilter: function (data) {
           return data
@@ -177,7 +180,7 @@
 
     if (o.type == 'jsonp') return handleJsonp(o, fn, err, url)
 
-    http = xhr()
+    http = xhr(o);
     http.open(method, url, o.async === false ? false : true)
     setHeaders(http, o)
     setCredentials(http, o)
