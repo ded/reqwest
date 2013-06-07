@@ -305,6 +305,7 @@
       while (self._fulfillmentHandlers.length > 0) {
         self._fulfillmentHandlers.shift()(resp)
       }
+
       complete(resp)
     }
 
