@@ -48,16 +48,16 @@
         // is it x-domain
         if (typeof o.crossOrigin !== 'undefined' && !!o.crossOrigin === true) {
           if (win[xmlHttpRequest] && 'withCredentials' in new XMLHttpRequest()) {
-            return new XMLHttpRequest();
+            return new XMLHttpRequest()
           } else if (win[xDomainRequest]) {
-            return new XDomainRequest();
+            return new XDomainRequest()
           } else {
-            throw new Error('Browser does not support cross-origin requests');
+            throw new Error('Browser does not support cross-origin requests')
           }
         } else if (win[xmlHttpRequest]) {
-          return new XMLHttpRequest();
+          return new XMLHttpRequest()
         } else {
-          return new ActiveXObject('Microsoft.XMLHTTP');
+          return new ActiveXObject('Microsoft.XMLHTTP')
         }
       }
     , globalSetupOptions = {
@@ -193,13 +193,13 @@
 
     if (o.type == 'jsonp') return handleJsonp(o, fn, err, url)
 
-    http = xhr(o);
+    http = xhr(o)
     http.open(method, url, o.async === false ? false : true)
     setHeaders(http, o)
     setCredentials(http, o)
     if (win[xDomainRequest] && http instanceof win[xDomainRequest]) {
-        http.onload = fn;
-        http.onerror = err;
+        http.onload = fn
+        http.onerror = err
     } else {
       http.onreadystatechange = handleReadyState(this, fn, err)
     }
@@ -275,7 +275,7 @@
     }
 
     function success (resp) {
-      resp = (type !== 'jsonp') ? self.request : resp;
+      resp = (type !== 'jsonp') ? self.request : resp
       // use global data filter on response text
       var filteredResponse = globalSetupOptions.dataFilter(resp.responseText, type)
         , r = resp.responseText = filteredResponse
@@ -316,6 +316,7 @@
     }
 
     function error(resp, msg, t) {
+      resp = self.request
       self._responseArgs.resp = resp
       self._responseArgs.msg = msg
       self._responseArgs.t = t
