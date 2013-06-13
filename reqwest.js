@@ -46,9 +46,10 @@
 
     , xhr = function(o) {
         // is it x-domain
-        if (typeof o.crossOrigin !== 'undefined' && !!o.crossOrigin === true) {
-          if (win[xmlHttpRequest] && 'withCredentials' in new XMLHttpRequest()) {
-            return new XMLHttpRequest()
+        if (o.crossOrigin === true) {
+          var xhr = win[xmlHttpRequest] ? new XMLHttpRequest() : null
+          if (xhr && 'withCredentials' in xhr) {
+            return xhr
           } else if (win[xDomainRequest]) {
             return new XDomainRequest()
           } else {
@@ -183,6 +184,7 @@
         ? reqwest.toQueryString(o.data)
         : (o.data || null)
       , http
+      , sendWait = 0
 
     // if we're working on a GET request and we have data then we should append
     // query string to end of URL and not post data
@@ -200,11 +202,16 @@
     if (win[xDomainRequest] && http instanceof win[xDomainRequest]) {
         http.onload = fn
         http.onerror = err
+        // NOTE: see http://social.msdn.microsoft.com/Forums/en-US/iewebdevelopment/thread/30ef3add-767c-4436-b8a9-f1ca19b4812e
+        http.onprogress = function() {}
+        sendWait = 200
     } else {
       http.onreadystatechange = handleReadyState(this, fn, err)
     }
     o.before && o.before(http)
-    http.send(data)
+    setTimeout(function () {
+      http.send(data)
+    }, sendWait);
     return http
   }
 
