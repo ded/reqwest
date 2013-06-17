@@ -515,7 +515,7 @@
           buildParams(prefix + '[' + (typeof v === 'object' ? i : '') + ']', v, traditional, add)
         }
       }
-    } else if (obj.toString() === '[object Object]') {
+    } else if (obj && obj.toString() === '[object Object]') {
       // Serialize object item.
       for (name in obj) {
         buildParams(prefix + '[' + name + ']', obj[name], traditional, add)
