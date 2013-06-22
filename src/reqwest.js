@@ -181,6 +181,7 @@
     http.open(method, url, o.async === false ? false : true)
     setHeaders(http, o)
     setCredentials(http, o)
+    http.onprogress = function() {}
     http.onreadystatechange = handleReadyState(this, fn, err)
     o.before && o.before(http)
     http.send(data)
