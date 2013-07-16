@@ -424,6 +424,7 @@
       })
         .then(function (resp) {
             ok(resp, 'received response in promise success callback')
+            return resp;
         })
         .then(function (resp) {
             ok(resp, 'received response in second promise success callback')
@@ -1615,6 +1616,43 @@
         )
     })
 
+    test('then is chainable', 2, function () {
+      ajax({
+          url: '/tests/fixtures/fixtures.json'
+        , type: 'json'
+      })
+        .then(
+            function (resp) {
+              ok(true, 'first success callback fired')
+              return 'new value';
+            }
+        )
+        .then(
+            function (resp) {
+              ok(resp === 'new value', 'second success callback fired')
+            }
+        )
+    })
+
+    test('success does not chain with then', 2, function () {
+      ajax({
+          url: '/tests/fixtures/fixtures.json'
+        , type: 'json'
+        , success: function() {
+          ok(true, 'success callback fired')
+          return 'some independent value';
+        }
+      })
+        .then(
+            function (resp) {
+              ok(
+                resp && resp !== 'some independent value'
+                , 'then callback fired'
+              )
+            }
+        )
+    })
+
     test('then & always handlers can be added after a response is received'
           , 2
           , function () {
@@ -1635,6 +1673,26 @@
               ).always(function () {
                 ok(true, 'complete callback called')
               })
+          }, 1)
+        })
+    })
+
+    test('then is chainable after a response is received'
+          , 2
+          , function () {
+
+      var a = ajax({
+          url: '/tests/fixtures/fixtures.json'
+        , type: 'json'
+      })
+        .always(function () {
+          setTimeout(function () {
+            a.then(function () {
+              ok(true, 'first success callback called')
+              return 'new value';
+            }).then(function (resp) {
+              ok(resp === 'new value', 'second success callback called')
+            })
           }, 1)
         })
     })
