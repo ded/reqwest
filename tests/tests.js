@@ -323,7 +323,9 @@
       , type: 'json'
       , async: false
       })
-      ok(eval('(' + r.request.response + ')').boosh == 'boosh', 'can make sync calls')
+      var request = r.request,
+        responseText = request.response !== undefined ? request.response : request.responseText
+      ok(eval('(' + responseText + ')').boosh == 'boosh', 'can make sync calls')
       done()
     })
 
