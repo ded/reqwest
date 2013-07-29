@@ -285,7 +285,12 @@
       resp = (type !== 'jsonp') ? self.request : resp
       // use global data filter on response text
       var filteredResponse = globalSetupOptions.dataFilter(resp.responseText, type)
-        , r = resp.responseText = filteredResponse
+        , r = filteredResponse
+      try {
+        resp.responseText = r
+      } catch (e) {
+        // can't assign this in IE<=8, just ignore
+      }
       if (r) {
         switch (type) {
         case 'json':
@@ -545,7 +550,7 @@
           buildParams(prefix + '[' + (typeof v === 'object' ? i : '') + ']', v, traditional, add)
         }
       }
-    } else if (obj.toString() === '[object Object]') {
+    } else if (obj && obj.toString() === '[object Object]') {
       // Serialize object item.
       for (name in obj) {
         buildParams(prefix + '[' + name + ']', obj[name], traditional, add)
