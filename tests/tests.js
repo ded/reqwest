@@ -323,7 +323,7 @@
       , type: 'json'
       , async: false
       })
-      ok(eval('(' + r.request.responseText + ')').boosh == 'boosh', 'can make sync calls')
+      ok(eval('(' + r.request.response + ')').boosh == 'boosh', 'can make sync calls')
       done()
     })
 
