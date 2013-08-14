@@ -196,7 +196,8 @@
     if (win[xDomainRequest] && http instanceof win[xDomainRequest]) {
         http.onload = fn
         http.onerror = err
-        // NOTE: see http://social.msdn.microsoft.com/Forums/en-US/iewebdevelopment/thread/30ef3add-767c-4436-b8a9-f1ca19b4812e
+        // NOTE: see
+        // http://social.msdn.microsoft.com/Forums/en-US/iewebdevelopment/thread/30ef3add-767c-4436-b8a9-f1ca19b4812e
         http.onprogress = function() {}
         sendWait = true
     } else {
@@ -206,7 +207,7 @@
     if (sendWait) {
       setTimeout(function () {
         http.send(data)
-      }, 200);
+      }, 200)
     } else {
       http.send(data)
     }
@@ -234,6 +235,7 @@
     // of tracking the Promises
     this._fulfilled = false
     // success handlers
+    this._successHandler = function(){}
     this._fulfillmentHandlers = []
     // error handlers
     this._errorHandlers = []
@@ -254,9 +256,9 @@
     }
 
     if (o.success) {
-      this._fulfillmentHandlers.push(function () {
+      this._successHandler = function () {
         o.success.apply(o, arguments)
-      })
+      }
     }
 
     if (o.error) {
@@ -318,8 +320,9 @@
       self._responseArgs.resp = resp
       self._fulfilled = true
       fn(resp)
+      self._successHandler(resp)
       while (self._fulfillmentHandlers.length > 0) {
-        self._fulfillmentHandlers.shift()(resp)
+        resp = self._fulfillmentHandlers.shift()(resp)
       }
 
       complete(resp)
@@ -362,7 +365,7 @@
       success = success || function () {}
       fail = fail || function () {}
       if (this._fulfilled) {
-        success(this._responseArgs.resp)
+        this._responseArgs.resp = success(this._responseArgs.resp)
       } else if (this._erred) {
         fail(this._responseArgs.resp, this._responseArgs.msg, this._responseArgs.t)
       } else {
