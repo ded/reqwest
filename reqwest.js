@@ -184,7 +184,7 @@
         ? reqwest.toQueryString(o.data)
         : (o.data || null)
       , http
-      , sendWait = 0
+      , sendWait = false
 
     // if we're working on a GET request and we have data then we should append
     // query string to end of URL and not post data
@@ -204,14 +204,18 @@
         http.onerror = err
         // NOTE: see http://social.msdn.microsoft.com/Forums/en-US/iewebdevelopment/thread/30ef3add-767c-4436-b8a9-f1ca19b4812e
         http.onprogress = function() {}
-        sendWait = 200
+        sendWait = true
     } else {
       http.onreadystatechange = handleReadyState(this, fn, err)
     }
     o.before && o.before(http)
-    setTimeout(function () {
+    if (sendWait) {
+      setTimeout(function () {
+        http.send(data)
+      }, 200);
+    } else {
       http.send(data)
-    }, sendWait);
+    }
     return http
   }
 
