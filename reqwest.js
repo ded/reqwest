@@ -22,6 +22,7 @@
     , callbackPrefix = 'reqwest_' + (+new Date())
     , lastValue // data stored by the most recent JSONP callback
     , xmlHttpRequest = 'XMLHttpRequest'
+    , xDomainRequest = 'XDomainRequest'
     , noop = function () {}
 
     , isArray = typeof Array.isArray == 'function'
@@ -43,13 +44,23 @@
           }
       }
 
-    , xhr = win[xmlHttpRequest]
-        ? function () {
-            return new XMLHttpRequest()
+    , xhr = function(o) {
+        // is it x-domain
+        if (o.crossOrigin === true) {
+          var xhr = win[xmlHttpRequest] ? new XMLHttpRequest() : null
+          if (xhr && 'withCredentials' in xhr) {
+            return xhr
+          } else if (win[xDomainRequest]) {
+            return new XDomainRequest()
+          } else {
+            throw new Error('Browser does not support cross-origin requests')
           }
-        : function () {
-            return new ActiveXObject('Microsoft.XMLHTTP')
-          }
+        } else if (win[xmlHttpRequest]) {
+          return new XMLHttpRequest()
+        } else {
+          return new ActiveXObject('Microsoft.XMLHTTP')
+        }
+      }
     , globalSetupOptions = {
         dataFilter: function (data) {
           return data
@@ -83,7 +94,7 @@
     if (!o.crossOrigin && !headers[requestedWith]) headers[requestedWith] = defaultHeaders.requestedWith
     if (!headers[contentType]) headers[contentType] = o.contentType || defaultHeaders.contentType
     for (h in headers)
-      headers.hasOwnProperty(h) && http.setRequestHeader(h, headers[h])
+      headers.hasOwnProperty(h) && 'setRequestHeader' in http && http.setRequestHeader(h, headers[h])
   }
 
   function setCredentials(http, o) {
@@ -173,6 +184,7 @@
         ? reqwest.toQueryString(o.data)
         : (o.data || null)
       , http
+      , sendWait = 0
 
     // if we're working on a GET request and we have data then we should append
     // query string to end of URL and not post data
@@ -183,13 +195,23 @@
 
     if (o.type == 'jsonp') return handleJsonp(o, fn, err, url)
 
-    http = xhr()
+    http = xhr(o)
     http.open(method, url, o.async === false ? false : true)
     setHeaders(http, o)
     setCredentials(http, o)
-    http.onreadystatechange = handleReadyState(this, fn, err)
+    if (win[xDomainRequest] && http instanceof win[xDomainRequest]) {
+        http.onload = fn
+        http.onerror = err
+        // NOTE: see http://social.msdn.microsoft.com/Forums/en-US/iewebdevelopment/thread/30ef3add-767c-4436-b8a9-f1ca19b4812e
+        http.onprogress = function() {}
+        sendWait = 200
+    } else {
+      http.onreadystatechange = handleReadyState(this, fn, err)
+    }
     o.before && o.before(http)
-    http.send(data)
+    setTimeout(function () {
+      http.send(data)
+    }, sendWait);
     return http
   }
 
@@ -260,6 +282,7 @@
     }
 
     function success (resp) {
+      resp = (type !== 'jsonp') ? self.request : resp
       // use global data filter on response text
       var filteredResponse = globalSetupOptions.dataFilter(resp.responseText, type)
         , r = filteredResponse
@@ -305,6 +328,7 @@
     }
 
     function error(resp, msg, t) {
+      resp = self.request
       self._responseArgs.resp = resp
       self._responseArgs.msg = msg
       self._responseArgs.t = t
