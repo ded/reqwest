@@ -1,0 +1,24 @@
+{
+  "folders": [{
+      "path": ".",
+      "folder_exclude_patterns": [
+        "node_modules"
+      ],
+      "file_exclude_patterns": [
+        "*.sublime-workspace"
+      ]}
+  ],
+
+  "settings": {
+    "tab_size": 2,
+    "translate_tabs_to_spaces": true,
+    "trim_trailing_white_space_on_save": true,
+    "ensure_newline_at_eof_on_save": true
+  },
+
+  "build_systems": [{
+    "name": "test",
+    "working_dir": "$project_path",
+    "cmd": ["make", "test"]
+  }]
+}
