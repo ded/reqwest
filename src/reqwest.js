@@ -6,7 +6,7 @@
 
   var win = window
     , doc = document
-    , twoHundo = /^20\d$/
+    , twoHundo = /^(20\d|1223)$/
     , byTag = 'getElementsByTagName'
     , readyState = 'readyState'
     , contentType = 'Content-Type'
