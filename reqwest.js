@@ -1,4 +1,4 @@
-/*! version: 0.9.2 */
+/*! version: 0.9.3 */
 /*!
   * Reqwest! A general purpose XHR connection manager
   * (c) Dustin Diaz 2013
@@ -535,7 +535,7 @@
       // If traditional, encode the "old" way (the way 1.3.2 or older
       // did it), otherwise encode params recursively.
       for (prefix in o) {
-        buildParams(prefix, o[prefix], traditional, add)
+        if (o.hasOwnProperty(prefix)) buildParams(prefix, o[prefix], traditional, add)
       }
     }
 
