@@ -1,3 +1,4 @@
+/*! version: 0.9.5 */
 /*!
   * Reqwest! A general purpose XHR connection manager
   * (c) Dustin Diaz 2013
