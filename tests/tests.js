@@ -512,6 +512,48 @@
 
   sink('Connection Object', function (test, ok) {
 
+    test('use xhr factory provided in the options', function (complete) {
+      var reqwest
+      , xhr
+
+      if (typeof XMLHttpRequest !== 'undefined') {
+          xhr = new XMLHttpRequest()
+      } else if (typeof ActiveXObject !== 'undefined') {
+          xhr = new ActiveXObject('Microsoft.XMLHTTP')
+      } else {
+        ok(false, 'browser not supported')
+      }
+
+      reqwest = ajax({
+          url: '/tests/fixtures/fixtures.html',
+          xhr: function () {
+            return xhr
+          }
+      })
+
+      ok(reqwest.request === xhr, 'uses factory')
+      complete()
+    })
+
+    test('fallbacks to own xhr factory if falsy is returned', function (complete) {
+      var reqwest
+
+      FakeXHR.setup()
+      try {
+        reqwest = ajax({
+            url: '/tests/fixtures/fixtures.html',
+            xhr: function () {
+              return null
+            }
+        })
+
+        ok(reqwest.request instanceof FakeXHR, 'fallbacks correctly')
+        complete()
+      } finally {
+        FakeXHR.restore()
+      }
+    })
+
     test('setRequestHeaders', function (complete) {
       ajax({
           url: '/tests/fixtures/fixtures.html'
