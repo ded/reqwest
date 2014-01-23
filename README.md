@@ -179,22 +179,36 @@ var r = reqwest({
 })
 ```
 
+## Options
 
-The Tests
----------
-    $ npm test
+  * `url` a fully qualified uri
+  * `method` http method (default: `GET`)
+  * `headers` http headers (default: `{}`)
+  * `data` entity body for `PATCH`, `POST` and `PUT` requests. Must be a query `String` or `JSON` object
+  * `type` a string enum. `html`, `xml`, `json`, or `jsonp`. Default is inferred by resource extension. Eg: `.json` will set `type` to `json`. `.xml` to `xml` etc.
+  * `contentType` sets the `Content-Type` of the request. Eg: `application/json`
+  * `crossOrigin`. for cross-origin requests for browsers that support this feature.
+  * `success` A function called when the request successfully completes
+  * `error` A function called when the request fails.
+  * `complete` A function called whether the request is a success or failure. Always called when complete.
+  *
 
-Browser support
----------------
+## The Tests
+
+``` sh
+npm test
+```
+
+## Browser support
+
   * IE6+
   * Chrome 1+
   * Safari 3+
   * Firefox 1+
   * Opera
 
-Ender Support
--------------
-Reqwest can be used as an [Ender](http://ender.no.de) module. Add it to your existing build as such:
+## Ender Support
+Reqwest can be used as an [Ender](http://enderjs.com) module. Add it to your existing build as such:
 
     $ ender add reqwest
 
@@ -224,9 +238,7 @@ $('#myform input[name=myradios]').serialize({type:'map'})['myradios'] // get the
 $('input[type=text],#specialthing').serialize() // turn any arbitrary set of form elements into a query string
 ```
 
-ajaxSetup
----------
-
+## ajaxSetup
 Use the `request.ajaxSetup` to predefine a data filter on all requests. See the example below that demonstrates JSON hijacking prevention:
 
 ``` js
@@ -238,8 +250,7 @@ $.ajaxSetup({
 })
 ```
 
-RequireJs and Jam
-------------------
+## RequireJs and Jam
 Reqwest can also be used with RequireJs and can be installed via jam
 
 ```
@@ -253,8 +264,7 @@ define(function(require){
 ```
 
 
-jQuery and Zepto Compatibility
-------------------------------
+## jQuery and Zepto Compatibility
 There are some differences between the *Reqwest way* and the
 *jQuery/Zepto way*.
 
