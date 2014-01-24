@@ -1,4 +1,4 @@
-/*! version: 1.0.1
+/*!
   * Reqwest! A general purpose XHR connection manager
   * license MIT (c) Dustin Diaz 2013
   * https://github.com/ded/reqwest
@@ -115,7 +115,6 @@
     var reqId = uniqid++
       , cbkey = o['jsonpCallback'] || 'callback' // the 'callback' key
       , cbval = o['jsonpCallbackName'] || reqwest.getcallbackPrefix(reqId)
-      // , cbval = o['jsonpCallbackName'] || ('reqwest_' + reqId) // the 'callback' value
       , cbreg = new RegExp('((^|\\?|&)' + cbkey + ')=([^&]+)')
       , match = url.match(cbreg)
       , script = doc.createElement('script')
