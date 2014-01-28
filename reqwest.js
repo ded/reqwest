@@ -230,8 +230,8 @@
   }
 
   function setType(url) {
-    var m = url.match(/\.(json|jsonp|html|xml)(\?|$)/)
-    return m ? m[1] : 'js'
+    var m = url.match(/\.(json|jsonp|html|xml|js)(\?|$)/)
+    return m ? m[1] : 'raw'
   }
 
   function init(o, fn) {
@@ -312,6 +312,7 @@
           resp = eval(r)
           break
         case 'html':
+        case 'raw':
           resp = r
           break
         case 'xml':
