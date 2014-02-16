@@ -31,6 +31,6 @@
   },
   "scripts": {
     "boosh": "smoosh make ./build.json",
-    "test": "node make/tests.js"
+    "test": "node ./test.js"
   }
 }
