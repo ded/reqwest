@@ -82,7 +82,7 @@
     headers['Accept'] = headers['Accept']
       || defaultHeaders['accept'][o['type']]
       || defaultHeaders['accept']['*']
-      
+
     var isAFormData = typeof FormData === "function" && (o['data'] instanceof FormData);
     // breaks cross-origin requests with legacy browsers
     if (!o['crossOrigin'] && !headers[requestedWith]) headers[requestedWith] = defaultHeaders['requestedWith']
@@ -399,6 +399,9 @@
         this._errorHandlers.push(fn)
       }
       return this
+    }
+  , catch: function (fn) {
+      return this.fail(fn)
     }
   }
 
