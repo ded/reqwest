@@ -205,10 +205,18 @@
     o['before'] && o['before'](http)
     if (sendWait) {
       setTimeout(function () {
-        http.send(data)
+        try {
+          http.send(data)
+        } catch(e){
+          err(e)
+        }
       }, 200)
     } else {
-      http.send(data)
+      try {
+        http.send(data)
+      } catch(e){
+        err(e)
+      }
     }
     return http
   }
