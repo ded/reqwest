@@ -17,6 +17,7 @@
     , lastValue // data stored by the most recent JSONP callback
     , xmlHttpRequest = 'XMLHttpRequest'
     , xDomainRequest = 'XDomainRequest'
+    , isFormDataSupported = typeof FormData === "function" || typeof FormData === "object"
     , noop = function () {}
 
     , isArray = typeof Array.isArray == 'function'
@@ -83,7 +84,7 @@
       || defaultHeaders['accept'][o['type']]
       || defaultHeaders['accept']['*']
 
-    var isAFormData = typeof FormData === "function" && (o['data'] instanceof FormData);
+    var isAFormData = isFormDataSupported && (o['data'] instanceof FormData);
     // breaks cross-origin requests with legacy browsers
     if (!o['crossOrigin'] && !headers[requestedWith]) headers[requestedWith] = defaultHeaders['requestedWith']
     if (!headers[contentType] && !isAFormData) headers[contentType] = o['contentType'] || defaultHeaders['contentType']
