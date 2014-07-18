@@ -351,6 +351,16 @@
       })
     })
 
+    test('empty resp string is passed to callback', function (complete) {
+      ajax({
+          url: '/tests/fixtures/empty.html'
+        , success: function (resp) {
+            ok(resp == '', 'resp object isn\'t empty string')
+            complete()
+          }
+      })
+    })
+
     test('invalid JSON sets error on resp object', function (complete) {
       ajax({
           url: '/tests/fixtures/invalidJSON.json'
