@@ -293,7 +293,7 @@
       } catch (e) {
         // can't assign this in IE<=8, just ignore
       }
-      if (r) {
+      if (r || r == '') {
         switch (type) {
         case 'json':
           try {
