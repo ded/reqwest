@@ -9,20 +9,26 @@
   else if (typeof define == 'function' && define.amd) define(definition)
   else context[name] = definition()
 }('reqwest', this, function () {
+  var context = this
+  var xmlHttpRequest = 'XMLHttpRequest'
 
-  var win = window
-    , doc = document
-    , httpsRe = /^http/
+  if (context.hasOwnProperty('window')) {
+    var win = window
+      , doc = document
+      , head = doc[byTag]('head')[0]
+      , byTag = 'getElementsByTagName'
+  } else {
+    context[xmlHttpRequest] = require('xhr2');
+  }
+
+  var httpsRe = /^http/
     , twoHundo = /^(20\d|1223)$/
-    , byTag = 'getElementsByTagName'
     , readyState = 'readyState'
     , contentType = 'Content-Type'
     , requestedWith = 'X-Requested-With'
-    , head = doc[byTag]('head')[0]
     , uniqid = 0
     , callbackPrefix = 'reqwest_' + (+new Date())
     , lastValue // data stored by the most recent JSONP callback
-    , xmlHttpRequest = 'XMLHttpRequest'
     , xDomainRequest = 'XDomainRequest'
     , noop = function () {}
 
@@ -48,15 +54,15 @@
     , xhr = function(o) {
         // is it x-domain
         if (o['crossOrigin'] === true) {
-          var xhr = win[xmlHttpRequest] ? new XMLHttpRequest() : null
+          var xhr = context[xmlHttpRequest] ? new XMLHttpRequest() : null
           if (xhr && 'withCredentials' in xhr) {
             return xhr
-          } else if (win[xDomainRequest]) {
+          } else if (context[xDomainRequest]) {
             return new XDomainRequest()
           } else {
             throw new Error('Browser does not support cross-origin requests')
           }
-        } else if (win[xmlHttpRequest]) {
+        } else if (context[xmlHttpRequest]) {
           return new XMLHttpRequest()
         } else {
           return new ActiveXObject('Microsoft.XMLHTTP')
@@ -69,7 +75,9 @@
       }
 
   function succeed(request) {
-    return httpsRe.test(window.location.protocol) ? twoHundo.test(request.status) : !!request.response;
+    return ((context.location && httpsRe.test(context.location.protocol))
+      ? twoHundo.test(request.status)
+      : !!request.response);
   }
 
   function handleReadyState(r, success, error) {
@@ -94,7 +102,7 @@
       || defaultHeaders['accept'][o['type']]
       || defaultHeaders['accept']['*']
 
-    var isAFormData = typeof FormData === "function" && (o['data'] instanceof FormData);
+    var isAFormData = typeof FormData === 'function' && (o['data'] instanceof FormData);
     // breaks cross-origin requests with legacy browsers
     if (!o['crossOrigin'] && !headers[requestedWith]) headers[requestedWith] = defaultHeaders['requestedWith']
     if (!headers[contentType] && !isAFormData) headers[contentType] = o['contentType'] || defaultHeaders['contentType']
@@ -203,7 +211,7 @@
     http.open(method, url, o['async'] === false ? false : true)
     setHeaders(http, o)
     setCredentials(http, o)
-    if (win[xDomainRequest] && http instanceof win[xDomainRequest]) {
+    if (context[xDomainRequest] && http instanceof context[xDomainRequest]) {
         http.onload = fn
         http.onerror = err
         // NOTE: see
@@ -308,7 +316,7 @@
         switch (type) {
         case 'json':
           try {
-            resp = win.JSON ? win.JSON.parse(r) : eval('(' + r + ')')
+            resp = context.JSON ? context.JSON.parse(r) : eval('(' + r + ')')
           } catch (err) {
             return error(resp, 'Could not parse JSON in response', err)
           }
