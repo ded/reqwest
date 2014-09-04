@@ -9,8 +9,8 @@
   if (context.hasOwnProperty('window')) {
     var win = window
       , doc = document
-      , head = doc[byTag]('head')[0]
       , byTag = 'getElementsByTagName'
+      , head = doc[byTag]('head')[0]
   } else {
     context[xmlHttpRequest] = require('xhr2');
   }
