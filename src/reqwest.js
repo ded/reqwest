@@ -4,7 +4,6 @@
   else context[name] = definition()
 }('reqwest', this, function () {
   var context = this
-  var xmlHttpRequest = 'XMLHttpRequest'
 
   if (context.hasOwnProperty('window')) {
     var win = window
@@ -12,7 +11,7 @@
       , byTag = 'getElementsByTagName'
       , head = doc[byTag]('head')[0]
   } else {
-    context[xmlHttpRequest] = require('xhr2');
+    var XHR2 = require('xhr2');
   }
 
   var httpsRe = /^http/
@@ -23,6 +22,7 @@
     , uniqid = 0
     , callbackPrefix = 'reqwest_' + (+new Date())
     , lastValue // data stored by the most recent JSONP callback
+    , xmlHttpRequest = 'XMLHttpRequest'
     , xDomainRequest = 'XDomainRequest'
     , noop = function () {}
 
@@ -58,6 +58,8 @@
           }
         } else if (context[xmlHttpRequest]) {
           return new XMLHttpRequest()
+        } else if (XHR2) {
+          return new XHR2()
         } else {
           return new ActiveXObject('Microsoft.XMLHTTP')
         }
