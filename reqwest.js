@@ -13,7 +13,8 @@
   var win = window
     , doc = document
     , httpsRe = /^http/
-    , twoHundo = /^(20\d|1223)$/
+    , protocolRe = /(^\w+):\/\//
+    , twoHundo = /^(20\d|1223)$/ //http://stackoverflow.com/questions/10046972/msie-returns-status-code-of-1223-for-ajax-request
     , byTag = 'getElementsByTagName'
     , readyState = 'readyState'
     , contentType = 'Content-Type'
@@ -68,8 +69,10 @@
         }
       }
 
-  function succeed(request) {
-    return httpsRe.test(window.location.protocol) ? twoHundo.test(request.status) : !!request.response;
+  function succeed(r) {
+    var protocol = protocolRe.exec(r.url);
+    protocol = (protocol && protocol[1]) || window.location.protocol;
+    return httpsRe.test(protocol) ? twoHundo.test(r.request.status) : !!r.request.response;
   }
 
   function handleReadyState(r, success, error) {
@@ -79,7 +82,7 @@
       if (r._aborted) return error(r.request)
       if (r.request && r.request[readyState] == 4) {
         r.request.onreadystatechange = noop
-        if (succeed(r.request)) success(r.request)
+        if (succeed(r)) success(r.request)
         else
           error(r.request)
       }
