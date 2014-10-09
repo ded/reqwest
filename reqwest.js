@@ -297,7 +297,10 @@
     }
 
     function success (resp) {
-      var type = o['type'] || setType(resp.getResponseHeader('Content-Type'))
+      var type = o['type']
+      if (resp) {
+        type = setType(resp.getResponseHeader('Content-Type'))
+      }
       resp = (type !== 'jsonp') ? self.request : resp
       // use global data filter on response text
       var filteredResponse = globalSetupOptions.dataFilter(resp.responseText, type)
@@ -413,9 +416,6 @@
         this._errorHandlers.push(fn)
       }
       return this
-    }
-  , catch: function (fn) {
-      return this.fail(fn)
     }
   }
 
