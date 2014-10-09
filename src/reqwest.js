@@ -91,7 +91,7 @@
       || defaultHeaders['accept'][o['type']]
       || defaultHeaders['accept']['*']
 
-    var isAFormData = typeof FormData === "function" && (o['data'] instanceof FormData);
+    var isAFormData = typeof FormData === 'function' && (o['data'] instanceof FormData);
     // breaks cross-origin requests with legacy browsers
     if (!o['crossOrigin'] && !headers[requestedWith]) headers[requestedWith] = defaultHeaders['requestedWith']
     if (!headers[contentType] && !isAFormData) headers[contentType] = o['contentType'] || defaultHeaders['contentType']
@@ -291,7 +291,7 @@
     }
 
     function success (resp) {
-      var type = o['type'] || setType(resp.getResponseHeader('Content-Type'))
+      var type = o['type'] || resp && setType(resp.getResponseHeader('Content-Type')) // resp can be undefined in IE
       resp = (type !== 'jsonp') ? self.request : resp
       // use global data filter on response text
       var filteredResponse = globalSetupOptions.dataFilter(resp.responseText, type)
@@ -408,7 +408,7 @@
       }
       return this
     }
-  , catch: function (fn) {
+  , 'catch': function (fn) {
       return this.fail(fn)
     }
   }
