@@ -21,7 +21,8 @@
   }
 
   var httpsRe = /^http/
-    , twoHundo = /^(20\d|1223)$/
+    , twoHundo = /^(20\d|1223)$/ //http://stackoverflow.com/questions/10046972/msie-returns-status-code-of-1223-for-ajax-request
+    , protocolRe = /(^\w+):\/\//
     , readyState = 'readyState'
     , contentType = 'Content-Type'
     , requestedWith = 'X-Requested-With'
@@ -76,10 +77,13 @@
         }
       }
 
-  function succeed(request) {
-    return ((context.location && httpsRe.test(context.location.protocol))
-      ? twoHundo.test(request.status)
-      : !!request.response);
+  function succeed(r) {
+    var protocol = protocolRe.exec(r.url);
+    protocol = (protocol && protocol[1]) || (context.location && context.location.protocol);
+
+    return httpsRe.test(protocol)
+      ? twoHundo.test(r.request.status)
+      : !!r.request.response;
   }
 
   function handleReadyState(r, success, error) {
@@ -89,7 +93,7 @@
       if (r._aborted) return error(r.request)
       if (r.request && r.request[readyState] == 4) {
         r.request.onreadystatechange = noop
-        if (succeed(r.request)) success(r.request)
+        if (succeed(r)) success(r.request)
         else
           error(r.request)
       }
@@ -304,7 +308,7 @@
     }
 
     function success (resp) {
-      var type = o['type'] || setType(resp.getResponseHeader('Content-Type'))
+      var type = o['type'] || resp && setType(resp.getResponseHeader('Content-Type')) // resp can be undefined in IE
       resp = (type !== 'jsonp') ? self.request : resp
       // use global data filter on response text
       var filteredResponse = globalSetupOptions.dataFilter(resp.responseText, type)
@@ -421,7 +425,7 @@
       }
       return this
     }
-  , catch: function (fn) {
+  , 'catch': function (fn) {
       return this.fail(fn)
     }
   }
