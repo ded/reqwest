@@ -182,7 +182,21 @@
           }
       })
     })
-  })
+
+    test('empty', function(complete) {
+      ajax({
+        url: '/tests/empty',
+        success: function(resp) {
+          ok(!resp, 'Response should be empty: ' + resp);
+          complete();
+        },
+        error: function() {
+          ok(false, 'Should not have received an error.');
+          complete();
+        }
+      });
+    });
+  });
 
   sink('JSONP', function (test, ok) {
     test('Named callback in query string', function (complete) {
