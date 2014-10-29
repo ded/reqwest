@@ -1,0 +1,19 @@
+{
+  "name": "reqwest"
+  "main": "reqwest.min.js",
+  "ignore": [
+    ".jshintrc",
+    "tests",
+    "make",
+    "vendor",
+    ".gitignore",
+    ".travis.yml",
+    "Makefile",
+    "package.json",
+    "phantom.js",
+    "test.js",
+    "use-me.sublime-project"
+  ],
+  "dependencies": {},
+  "devDependencies": {}
+}
