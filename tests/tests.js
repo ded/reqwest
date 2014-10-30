@@ -1784,10 +1784,11 @@
           url: '/tests/timeout'
         , type: 'json'
         , timeout: 250
-        , error: function (err) {
+        , error: function (err, msg) {
             ok(err, 'received error response')
             try {
               ok(err && err.status === 0, 'correctly caught timeout')
+              ok(msg && msg === 'Request is aborted: timeout', 'timeout message received')
             } catch (e) {
               ok(true, 'IE is a troll')
             }

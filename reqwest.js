@@ -80,6 +80,7 @@
       // use _aborted to mitigate against IE err c00c023f
       // (can't read props on aborted request objects)
       if (r._aborted) return error(r.request)
+      if (r._timedOut) return error(r.request, 'Request is aborted: timeout')
       if (r.request && r.request[readyState] == 4) {
         r.request.onreadystatechange = noop
         if (succeed(r)) success(r.request)
@@ -266,7 +267,7 @@
 
     if (o['timeout']) {
       this.timeout = setTimeout(function () {
-        self.abort()
+        timedOut()
       }, o['timeout'])
     }
 
@@ -342,6 +343,11 @@
       }
 
       complete(resp)
+    }
+
+    function timedOut() {
+      self._timedOut = true
+      self.request.abort()      
     }
 
     function error(resp, msg, t) {
