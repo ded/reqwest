@@ -16,7 +16,7 @@
     , head = doc[byTag]('head')[0]
     , uniqid = 0
     , callbackPrefix = 'reqwest_' + (+new Date())
-    , lastValue // data stored by the most recent JSONP callback
+    , lastValue = {} // data collection stored by the most recent JSONP callback
     , xmlHttpRequest = 'XMLHttpRequest'
     , xDomainRequest = 'XDomainRequest'
     , noop = function () {}
@@ -106,10 +106,6 @@
     }
   }
 
-  function generalCallback(data) {
-    lastValue = data
-  }
-
   function urlappend (url, s) {
     return url + (/\?/.test(url) ? '&' : '?') + s
   }
@@ -117,12 +113,24 @@
   function handleJsonp(o, fn, err, url) {
     var reqId = uniqid++
       , cbkey = o['jsonpCallback'] || 'callback' // the 'callback' key
-      , cbval = o['jsonpCallbackName'] || reqwest.getcallbackPrefix(reqId)
+      , cbval = o['jsonpCallbackName'] || reqwest.generateUniqueCallbackName(reqId)
       , cbreg = new RegExp('((^|\\?|&)' + cbkey + ')=([^&]+)')
       , match = url.match(cbreg)
       , script = doc.createElement('script')
       , loaded = 0
       , isIE10 = navigator.userAgent.indexOf('MSIE 10.0') !== -1
+
+    var jsonpCallback = function(data) {
+        lastValue[reqId] = data
+      },
+      removeProcessedJsonpData = function() {
+        if (lastValue.hasOwnProperty(reqId)) {
+          delete lastValue[reqId]
+        }
+        if (cbval.indexOf(reqwest.getcallbackPrefix()) >= 0 && win.hasOwnProperty(cbval)) {
+          delete win[cbval]
+        }
+      }
 
     if (match) {
       if (match[3] === '?') {
@@ -134,7 +142,7 @@
       url = urlappend(url, cbkey + '=' + cbval) // no callback details, add 'em
     }
 
-    win[cbval] = generalCallback
+    win[cbval] = jsonpCallback
 
     script.type = 'text/javascript'
     script.src = url
@@ -153,8 +161,8 @@
       script.onload = script.onreadystatechange = null
       script.onclick && script.onclick()
       // Call the user callback with the last value stored and clean up values and scripts.
-      fn(lastValue)
-      lastValue = undefined
+      fn(lastValue[reqId])
+      removeProcessedJsonpData()
       head.removeChild(script)
       loaded = 1
     }
@@ -167,7 +175,7 @@
       abort: function () {
         script.onload = script.onreadystatechange = null
         err({}, 'Request is aborted: timeout', {})
-        lastValue = undefined
+        removeProcessedJsonpData()
         head.removeChild(script)
         loaded = 1
       }
@@ -293,7 +301,7 @@
 
     function success (resp) {
       var type = o['type'] || resp && setType(resp.getResponseHeader('Content-Type')) // resp can be undefined in IE
-      resp = (type !== 'jsonp') ? self.request : resp
+      resp = (type !== 'jsonp') ? self.request : (resp || {})
       // use global data filter on response text
       var filteredResponse = globalSetupOptions.dataFilter(resp.responseText, type)
         , r = filteredResponse
@@ -584,6 +592,14 @@
 
   reqwest.getcallbackPrefix = function () {
     return callbackPrefix
+  }
+
+  reqwest.generateUniqueCallbackName = function (reqId) {
+    var separator = "_"
+    //callback name should look like reqwest_1416364846406_1416364865317_2
+    return this.getcallbackPrefix() + separator +
+      (+new Date()) + separator +
+      reqId
   }
 
   // jQuery and Zepto compatibility, differences can be remapped here so you can call
