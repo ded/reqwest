@@ -595,7 +595,7 @@
   }
 
   reqwest.generateUniqueCallbackName = function (reqId) {
-    var separator = "_"
+    var separator = '_'
     //callback name should look like reqwest_1416364846406_1416364865317_2
     return this.getcallbackPrefix() + separator +
       (+new Date()) + separator +
