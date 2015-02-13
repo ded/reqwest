@@ -1821,6 +1821,22 @@
     })
   })
 
+  sink('JavaScript', function (test, ok) {
+    test('Poisoning Scope Variables', function (complete) {
+      ajax({
+          url: '/tests/fixtures/poison.js'
+        , type: 'js'
+        , success: function () {
+            ok(
+                true // Enough to be here
+              , 'test cannot fail if reached'
+            )
+            complete()
+          }
+      })
+    })
+  })
+
   start()
 
 }(reqwest))

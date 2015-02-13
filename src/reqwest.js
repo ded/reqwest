@@ -20,6 +20,7 @@
     , xmlHttpRequest = 'XMLHttpRequest'
     , xDomainRequest = 'XDomainRequest'
     , noop = function () {}
+    , gEval = function(s) { win.eval.call(win, s) }
 
     , isArray = typeof Array.isArray == 'function'
         ? Array.isArray
@@ -306,13 +307,13 @@
         switch (type) {
         case 'json':
           try {
-            resp = win.JSON ? win.JSON.parse(r) : eval('(' + r + ')')
+            resp = win.JSON ? win.JSON.parse(r) : gEval('(' + r + ')')
           } catch (err) {
             return error(resp, 'Could not parse JSON in response', err)
           }
           break
         case 'js':
-          resp = eval(r)
+          resp = gEval(r)
           break
         case 'html':
           resp = r
@@ -341,7 +342,7 @@
 
     function timedOut() {
       self._timedOut = true
-      self.request.abort()      
+      self.request.abort()
     }
 
     function error(resp, msg, t) {
