@@ -20,7 +20,7 @@
     , xmlHttpRequest = 'XMLHttpRequest'
     , xDomainRequest = 'XDomainRequest'
     , noop = function () {}
-    , gEval = function(s) { win.eval.call(win, s) }
+    , gEval = function(s) { return win.eval.call(win, s) }
 
     , isArray = typeof Array.isArray == 'function'
         ? Array.isArray
