@@ -1821,6 +1821,59 @@
     })
   })
 
+  sink('Retry after timeout/abort', function (test, ok) {
+    test('timeout', function (complete) {
+      var calledError = false,
+          req = ajax({
+            url: '/tests/quicker-second-response'
+            , type: 'json'
+            , timeout: 250
+            , error: function (err, msg) {
+              ok(err, 'received error response')
+              try {
+                ok(err && err.status === 0, 'correctly caught timeout')
+                ok(msg && msg === 'Request is aborted: timeout', 'timeout message received')
+              } catch (e) {
+                ok(true, 'IE is a troll')
+              }
+              calledError = true;
+              setTimeout(function() { req.retry.call(req); }, 100);
+            }
+            , success: function(resp) {
+              ok(resp.headers && resp.method && resp.query, 'Received correct response body');
+              ok(calledError, 'Error was called first because of timeout, then succeed on retry.');
+              complete();
+            }
+          })
+    });
+
+    test('abort', function (complete) {
+      var calledError = false,
+        req = ajax({
+          url: '/tests/quicker-second-response'
+          , type: 'json'
+          , timeout: 3000
+          , error: function (err, msg) {
+            ok(err, 'received error response')
+            try {
+              ok(err && err.status === 0, 'correctly caught abort')
+            } catch (e) {
+              ok(true, 'IE is a troll')
+            }
+            calledError = true;
+            setTimeout(function() { req.retry.call(req); }, 100);
+          }
+          , success: function(resp) {
+            ok(resp.headers && resp.method && resp.query, 'Received correct response body');
+            ok(calledError, 'Error was called first because of abort, then succeeds on retry.');
+            complete();
+          }
+        });
+
+      setTimeout(function() { req.abort.call(req); }, 300);
+    });
+  })
+
   start()
 
 }(reqwest))
