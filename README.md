@@ -1,4 +1,8 @@
-# It's AJAX
+## Gilt Fork
+
+We love [ded/reqwest](https://github.com/ded/reqwest) and use it extensively at Gilt. Unfortunately the main project has fallen into a period of dormancy. Many bugfixes and improvements lie in wait, contributed from passionate users. This is our fork, integrating as many of the outstanding user contributions as is possible.
+
+## It's AJAX
 
 All over again. Includes support for xmlHttpRequest, JSONP, CORS, and CommonJS Promises A.
 
