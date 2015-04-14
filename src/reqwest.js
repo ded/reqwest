@@ -231,6 +231,7 @@
 
   function setType(header) {
     // json, javascript, text/plain, text/html, xml
+    if (header === null) return undefined; //In case of no content-type.
     if (header.match('json')) return 'json'
     if (header.match('javascript')) return 'js'
     if (header.match('text')) return 'html'

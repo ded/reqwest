@@ -27,6 +27,10 @@ var routes = {
         delayed.pipe(res)
       }, 2000)
   },
+  '/tests/204': function(req, res) {
+    res.writeHead(204);
+    res.end();
+  },
   '(([\\w\\-\\/\\.]+)\\.(css|js|json|jsonp|html|xml)$)': function (req, res, next, uri, file, ext) {
     res.writeHead(200, {
         'Expires': 0
