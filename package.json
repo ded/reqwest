@@ -32,5 +32,13 @@
   "scripts": {
     "boosh": "smoosh make ./build.json",
     "test": "node ./test.js"
+  },
+  "spm": {
+    "main": "reqwest.js",
+    "ignore": [
+      "vendor",
+      "test",
+      "make"
+    ]
   }
 }

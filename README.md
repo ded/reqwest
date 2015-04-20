@@ -245,6 +245,12 @@ define(function(require){
 });
 ```
 
+## spm
+Reqwest can also be installed via spm [![](http://spmjs.io/badge/reqwest)](http://spmjs.io/package/reqwest)
+
+```
+spm install reqwest
+```
 
 ## jQuery and Zepto Compatibility
 There are some differences between the *Reqwest way* and the
