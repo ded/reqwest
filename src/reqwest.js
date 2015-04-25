@@ -52,7 +52,7 @@
             throw new Error('Browser does not support cross-origin requests')
           }
         } else if (win[xmlHttpRequest]) {
-          return new XMLHttpRequest()
+          return new XMLHttpRequest({mozSystem: o['mozSystem']})
         } else {
           return new ActiveXObject('Microsoft.XMLHTTP')
         }
