@@ -347,7 +347,7 @@
 
     function timedOut() {
       self._timedOut = true
-      self.request.abort()      
+      self.request.abort()
     }
 
     function error(resp, msg, t) {
@@ -372,6 +372,8 @@
     }
 
   , retry: function () {
+      this._aborted=false;
+      this._timedOut=false;
       init.call(this, this.o, this.fn)
     }
 
