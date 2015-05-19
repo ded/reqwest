@@ -750,14 +750,6 @@
         , success: function (resp) {
             ok(methodMatch(resp, 'GET'), 'correct request method (GET)')
             ok(
-                headerMatch(
-                    resp
-                  , 'content-type'
-                  , 'application/x-www-form-urlencoded'
-                )
-              , 'correct Content-Type request header'
-            )
-            ok(
                 headerMatch(resp, 'x-requested-with', 'XMLHttpRequest')
               , 'correct X-Requested-With header'
             )
@@ -781,10 +773,6 @@
         , success: function (resp) {
             ok(methodMatch(resp, 'GET'), 'correct request method (GET)')
             ok(
-                headerMatch(resp, 'content-type', 'yapplication/foobar')
-              , 'correct Content-Type request header'
-            )
-            ok(
                 headerMatch(resp, 'x-requested-with', 'XMLHttpRequest')
               , 'correct X-Requested-With header'
             )
@@ -807,14 +795,6 @@
         , dataType: 'json' // should map to 'type'
         , success: function (resp) {
             ok(methodMatch(resp, 'GET'), 'correct request method (GET)')
-            ok(
-                headerMatch(
-                    resp
-                  , 'content-type'
-                  , 'application/x-www-form-urlencoded'
-                )
-              , 'correct Content-Type request header'
-            )
             ok(
                 headerMatch(resp, 'x-requested-with', 'XMLHttpRequest')
               , 'correct X-Requested-With header'
@@ -867,14 +847,6 @@
           // happens with headers
         , headers: { one: 1, two: 2 }
         , success: function (resp) {
-            ok(
-                headerMatch(
-                    resp
-                  , 'content-type'
-                  , 'application/x-www-form-urlencoded'
-                )
-              , 'correct Content-Type request header'
-            )
             ok(
                 headerMatch(resp, 'x-requested-with', 'XMLHttpRequest')
               , 'correct X-Requested-With header'
