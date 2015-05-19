@@ -8,6 +8,16 @@ var exec = require('child_process').exec
   , getMime = function(ext) {
       return mime.lookup(ext == 'jsonp' ? 'js' : ext)
     }
+  , alternateResponseDelay = true;
+
+function getAlternatingResponseDelay() {
+  var delay = 100;
+  if (alternateResponseDelay) {
+    delay = 1500;
+  }
+  alternateResponseDelay = !alternateResponseDelay;
+  return delay;
+}
 
 var routes = {
   '/': function (req, res) {
@@ -26,6 +36,19 @@ var routes = {
         req.query.callback && res.write(');')
         delayed.pipe(res)
       }, 2000)
+  },
+  '/tests/quicker-second-response': function (req, res) {
+    var delayed = DelayedStream.create(req)
+    setTimeout(function() {
+      res.writeHead(200, {
+        'Expires': 0
+        , 'Cache-Control': 'max-age=0, no-cache, no-store'
+      })
+      req.query.callback && res.write(req.query.callback + '(')
+      res.write(JSON.stringify({ method: req.method, query: req.query, headers: req.headers }))
+      req.query.callback && res.write(');')
+      delayed.pipe(res)
+    }, getAlternatingResponseDelay())
   },
   '(([\\w\\-\\/\\.]+)\\.(css|js|json|jsonp|html|xml)$)': function (req, res, next, uri, file, ext) {
     res.writeHead(200, {
