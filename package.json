@@ -33,6 +33,7 @@
     "boosh": "smoosh make ./build.json",
     "test": "node ./test.js"
   },
+  "license": "MIT",
   "spm": {
     "main": "reqwest.js",
     "ignore": [
