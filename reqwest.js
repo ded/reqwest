@@ -14,7 +14,8 @@
     , doc = document
     , httpsRe = /^http/
     , protocolRe = /(^\w+):\/\//
-    , twoHundo = /^(20\d|1223)$/ //http://stackoverflow.com/questions/10046972/msie-returns-status-code-of-1223-for-ajax-request
+  //http://stackoverflow.com/questions/10046972/msie-returns-status-code-of-1223-for-ajax-request
+    , twoHundo = /^(20\d|1223)$/
     , byTag = 'getElementsByTagName'
     , readyState = 'readyState'
     , contentType = 'Content-Type'
@@ -596,6 +597,7 @@
   // .ajax.compat(options, callback)
   reqwest.compat = function (o, fn) {
     if (o) {
+      o = Object.create(o)
       o['type'] && (o['method'] = o['type']) && delete o['type']
       o['dataType'] && (o['type'] = o['dataType'])
       o['jsonpCallback'] && (o['jsonpCallbackName'] = o['jsonpCallback']) && delete o['jsonpCallback']
