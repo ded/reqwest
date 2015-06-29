@@ -237,6 +237,7 @@
 
   function setType(header) {
     // json, javascript, text/plain, text/html, xml
+    if (header == null) return 'text/plain' // could be null in the event of a 204 (nginx does this)
     if (header.match('json')) return 'json'
     if (header.match('javascript')) return 'js'
     if (header.match('text')) return 'html'
