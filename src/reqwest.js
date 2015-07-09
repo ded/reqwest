@@ -231,6 +231,7 @@
 
   function setType(header) {
     // json, javascript, text/plain, text/html, xml
+    if (!header) return 'html';
     if (header.match('json')) return 'json'
     if (header.match('javascript')) return 'js'
     if (header.match('text')) return 'html'
@@ -341,7 +342,7 @@
 
     function timedOut() {
       self._timedOut = true
-      self.request.abort()      
+      self.request.abort()
     }
 
     function error(resp, msg, t) {
