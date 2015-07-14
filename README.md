@@ -2,6 +2,8 @@
 
 All over again. Includes support for xmlHttpRequest, JSONP, CORS, and CommonJS Promises A.
 
+It is also isomorphic allowing you to `require('reqwest')` in `Node.js` through the peer dependency [xhr2](https://github.com/pwnall/node-xhr2), albeit the original intent of this library is for the browser. For a more thorough solution for Node.js, see [mikeal/request](https://github.com/request/request).
+
 ## API
 
 ``` js
