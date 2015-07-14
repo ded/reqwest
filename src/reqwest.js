@@ -59,6 +59,10 @@
           if (xhr && 'withCredentials' in xhr) {
             return xhr
           } else if (context[xDomainRequest]) {
+            var protocolRegExp = /^https?/;
+            if (window.location.href.match(protocolRegExp)[0] !== o.url.match(protocolRegExp)[0]) {
+              throw new Error('XDomainRequest: requests must be targeted to the same scheme as the hosting page. See http://blogs.msdn.com/b/ieinternals/archive/2010/05/13/xdomainrequest-restrictions-limitations-and-workarounds.aspx')
+            }
             return new XDomainRequest()
           } else {
             throw new Error('Browser does not support cross-origin requests')
