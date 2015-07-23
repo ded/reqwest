@@ -6,7 +6,7 @@
 
   var context = this
 
-  if (context.hasOwnProperty('window')) {
+  if ('window' in context) {
     var doc = document
       , byTag = 'getElementsByTagName'
       , head = doc[byTag]('head')[0]
