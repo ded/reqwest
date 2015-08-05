@@ -801,6 +801,15 @@
       })
     })
 
+    test('standard mode on no content-type', function (complete) {
+      ajax({
+        url: '/tests/204'
+          , success: function (resp) {
+            ok(true, 'Nothing blew up.')
+          }
+        })
+    })
+
     test('compat mode "dataType=json" headers', function (complete) {
       ajax.compat({
           url: '/tests/none.json?echo'
