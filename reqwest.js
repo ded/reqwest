@@ -19,7 +19,9 @@
   } else {
     var XHR2
     try {
-      XHR2 = require('xhr2')
+      // prevent browserify including xhr2
+      var xhr2 = 'xhr2'
+      XHR2 = require(xhr2)
     } catch (ex) {
       throw new Error('Peer dependency `xhr2` required! Please npm install xhr2')
     }
