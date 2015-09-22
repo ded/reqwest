@@ -10,7 +10,7 @@
     "async",
     "sync"
   ],
-  "version": "2.0.3",
+  "version": "2.0.4",
   "homepage": "https://github.com/ded/reqwest",
   "author": "Dustin Diaz <dustin@dustindiaz.com> (http://dustindiaz.com)",
   "repository": {
