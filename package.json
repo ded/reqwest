@@ -19,6 +19,9 @@
   },
   "main": "./reqwest.js",
   "ender": "./src/ender.js",
+  "browser": {
+    "xhr2": false
+  },
   "devDependencies": {
     "connect": "1.8.x",
     "mime": "1.x.x",
