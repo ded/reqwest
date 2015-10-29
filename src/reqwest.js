@@ -196,7 +196,7 @@
       , url = typeof o === 'string' ? o : o['url']
       // convert non-string objects to query-string form unless o['processData'] is false
       , data = (o['processData'] !== false && o['data'] && typeof o['data'] !== 'string')
-        ? reqwest.toQueryString(o['data'])
+        ? reqwest.toQueryString(o['data'], o['traditional'])
         : (o['data'] || null)
       , http
       , sendWait = false
