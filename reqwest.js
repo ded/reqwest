@@ -34,7 +34,6 @@
     , requestedWith = 'X-Requested-With'
     , uniqid = 0
     , callbackPrefix = 'reqwest_' + (+new Date())
-    , lastValue // data stored by the most recent JSONP callback
     , xmlHttpRequest = 'XMLHttpRequest'
     , xDomainRequest = 'XDomainRequest'
     , noop = function () {}
@@ -126,10 +125,6 @@
     }
   }
 
-  function generalCallback(data) {
-    lastValue = data
-  }
-
   function urlappend (url, s) {
     return url + (/\?/.test(url) ? '&' : '?') + s
   }
@@ -154,7 +149,7 @@
       url = urlappend(url, cbkey + '=' + cbval) // no callback details, add 'em
     }
 
-    context[cbval] = generalCallback
+    context[cbval] = fn
 
     script.type = 'text/javascript'
     script.src = url
@@ -172,9 +167,7 @@
       }
       script.onload = script.onreadystatechange = null
       script.onclick && script.onclick()
-      // Call the user callback with the last value stored and clean up values and scripts.
-      fn(lastValue)
-      lastValue = undefined
+      // clean up values and scripts.
       head.removeChild(script)
       loaded = 1
     }
@@ -187,7 +180,6 @@
       abort: function () {
         script.onload = script.onreadystatechange = null
         err({}, 'Request is aborted: timeout', {})
-        lastValue = undefined
         head.removeChild(script)
         loaded = 1
       }
