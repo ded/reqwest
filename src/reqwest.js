@@ -6,7 +6,7 @@
 
   var context = this
 
-  if ('window' in context) {
+  if ('document' in context) {
     var doc = document
       , byTag = 'getElementsByTagName'
       , head = doc[byTag]('head')[0]
