@@ -44,5 +44,9 @@
       "test",
       "make"
     ]
-  }
+  },
+  "files": [
+    "reqwest.js",
+    "reqwest.min.js"
+  ]
 }
