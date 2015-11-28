@@ -12,7 +12,7 @@
 
   var context = this
 
-  if ('window' in context) {
+  if ('document' in context) {
     var doc = document
       , byTag = 'getElementsByTagName'
       , head = doc[byTag]('head')[0]
@@ -24,7 +24,6 @@
       throw new Error('Peer dependency `xhr2` required! Please npm install xhr2')
     }
   }
-
 
   var httpsRe = /^http/
     , protocolRe = /(^\w+):\/\//
@@ -221,7 +220,9 @@
     http.open(method, url, o['async'] === false ? false : true)
     setHeaders(http, o)
     setCredentials(http, o)
-    if (context[xDomainRequest] && http instanceof context[xDomainRequest]) {
+    var isXDomainRequest = context['XDomainRequest'] && http instanceof context['XDomainRequest'];
+    var isFake = context['FakeXMLHttpRequest'] && http instanceof context['FakeXMLHttpRequest'];
+    if (isXDomainRequest || isFake) {
         http.onload = fn
         http.onerror = err
         // NOTE: see
