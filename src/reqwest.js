@@ -30,7 +30,7 @@
     , lastValue // data stored by the most recent JSONP callback
     , xmlHttpRequest = 'XMLHttpRequest'
     , xDomainRequest = 'XDomainRequest'
-    , noop = function () {}
+    , onReadyStateHandler = function() {}
 
     , isArray = typeof Array.isArray == 'function'
         ? Array.isArray
@@ -89,7 +89,7 @@
       if (r._aborted) return error(r.request)
       if (r._timedOut) return error(r.request, 'Request is aborted: timeout')
       if (r.request && r.request[readyState] == 4) {
-        r.request.onreadystatechange = noop
+        r.request.onreadystatechange = onReadyStateHandler(r)
         if (succeed(r)) success(r.request)
         else
           error(r.request)
@@ -295,6 +295,12 @@
       this._completeHandlers.push(function () {
         o['complete'].apply(o, arguments)
       })
+    }
+
+    if (o['readyStateHandler']) {
+      onReadyStateHandler = function() {
+        o['readyStateHandler'].apply(o, arguments)
+      }
     }
 
     function complete (resp) {
