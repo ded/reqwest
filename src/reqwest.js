@@ -257,8 +257,19 @@
   }
 
   function init(o, fn) {
+    o = typeof o === 'string' ? { url: o } : o
+    for (var k in globalSetupOptions) {
+      if (typeof globalSetupOptions[k] === 'object') {
+        o[k] = o[k] ? o[k] : {}
+        for (var k2 in globalSetupOptions[k]) {
+          o[k][k2] = typeof o[k][k2] === 'undefined' ? globalSetupOptions[k][k2] : o[k][k2]
+        }
+      } else {
+        o[k] = typeof o[k] === 'undefined' ? globalSetupOptions[k] : o[k]
+      }
+    }
 
-    this.url = typeof o == 'string' ? o : o['url']
+    this.url = o['url']
     this.timeout = null
 
     // whether request has been fulfilled for purpose
