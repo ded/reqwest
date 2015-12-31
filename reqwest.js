@@ -578,7 +578,7 @@
 
   function buildParams(prefix, obj, traditional, add) {
     var name, i, v
-      , rbracket = /\[\]$/
+      , rbracket = /\[\]$/;
 
     if (isArray(obj)) {
       // Serialize array item.
