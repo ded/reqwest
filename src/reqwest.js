@@ -205,7 +205,7 @@
 
     // if we're working on a GET request and we have data then we should append
     // query string to end of URL and not post data
-    if ((o['type'] == 'jsonp' || method == 'GET') && data) {
+    if ((o['type'] == 'jsonp' || method == 'GET' || method == 'DELETE') && data) {
       url = urlappend(url, data)
       data = null
     }
