@@ -311,6 +311,7 @@
     }
 
     function success (resp) {
+      var xhr = resp
       var type = o['type'] || resp && setType(resp.getResponseHeader('Content-Type')) // resp can be undefined in IE
       resp = (type !== 'jsonp') ? self.request : resp
       // use global data filter on response text
@@ -350,7 +351,7 @@
       self._responseArgs.resp = resp
       self._fulfilled = true
       fn(resp)
-      self._successHandler(resp)
+      self._successHandler(resp, xhr)
       while (self._fulfillmentHandlers.length > 0) {
         resp = self._fulfillmentHandlers.shift()(resp)
       }

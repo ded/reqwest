@@ -12,7 +12,7 @@
 
   var context = this
 
-  if ('window' in context) {
+  if ('document' in context) {
     var doc = document
       , byTag = 'getElementsByTagName'
       , head = doc[byTag]('head')[0]
@@ -24,7 +24,6 @@
       throw new Error('Peer dependency `xhr2` required! Please npm install xhr2')
     }
   }
-
 
   var httpsRe = /^http/
     , protocolRe = /(^\w+):\/\//
@@ -65,6 +64,11 @@
           if (xhr && 'withCredentials' in xhr) {
             return xhr
           } else if (context[xDomainRequest]) {
+            var protocolRegExp = /^https?/;
+            if (window.location.href.match(protocolRegExp)[0] !== o.url.match(protocolRegExp)[0]) {
+              throw new Error('XDomainRequest: requests must be targeted to the same scheme as the hosting page.')
+              // As per: http://blogs.msdn.com/b/ieinternals/archive/2010/05/13/xdomainrequest-restrictions-limitations-and-workarounds.aspx
+            }
             return new XDomainRequest()
           } else {
             throw new Error('Browser does not support cross-origin requests')
@@ -313,6 +317,7 @@
     }
 
     function success (resp) {
+      var xhr = resp
       var type = o['type'] || resp && setType(resp.getResponseHeader('Content-Type')) // resp can be undefined in IE
       resp = (type !== 'jsonp') ? self.request : resp
       // use global data filter on response text
@@ -352,7 +357,7 @@
       self._responseArgs.resp = resp
       self._fulfilled = true
       fn(resp)
-      self._successHandler(resp)
+      self._successHandler(resp, xhr)
       while (self._fulfillmentHandlers.length > 0) {
         resp = self._fulfillmentHandlers.shift()(resp)
       }
