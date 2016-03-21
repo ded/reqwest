@@ -1,3 +1,4 @@
+
 !function (name, context, definition) {
   if (typeof module != 'undefined' && module.exports) module.exports = definition()
   else if (typeof define == 'function' && define.amd) define(definition)
@@ -18,6 +19,7 @@
       throw new Error('Peer dependency `xhr2` required! Please npm install xhr2')
     }
   }
+
 
   var httpsRe = /^http/
     , protocolRe = /(^\w+):\/\//
@@ -59,10 +61,12 @@
             return xhr
           } else if (context[xDomainRequest]) {
             var protocolRegExp = /^https?/;
+
             if (window.location.href.match(protocolRegExp)[0] !== o.url.match(protocolRegExp)[0]) {
               throw new Error('XDomainRequest: requests must be targeted to the same scheme as the hosting page.')
-              // As per: http://blogs.msdn.com/b/ieinternals/archive/2010/05/13/xdomainrequest-restrictions-limitations-and-workarounds.aspx
+              // As per: http://blogs.msdn.com/b/ieinternals/archive/2010/05/13/xdomainrequest-restrictions-limitations-and-workarounds.aspx   
             }
+
             return new XDomainRequest()
           } else {
             throw new Error('Browser does not support cross-origin requests')
@@ -192,7 +196,7 @@
     }
   }
 
-  function getRequest(fn, err) {
+  function getRequest(fn, err, progress) {
     var o = this.o
       , method = (o['method'] || 'GET').toUpperCase()
       , url = typeof o === 'string' ? o : o['url']
@@ -224,10 +228,12 @@
         http.onerror = err
         // NOTE: see
         // http://social.msdn.microsoft.com/Forums/en-US/iewebdevelopment/thread/30ef3add-767c-4436-b8a9-f1ca19b4812e
-        http.onprogress = function() {}
+        http.onprogress = (progress || function(){})
         sendWait = true
     } else {
       http.onreadystatechange = handleReadyState(this, fn, err)
+
+      http.upload && (http.upload.onprogress = progress)
     }
     o['before'] && o['before'](http)
     if (sendWait) {
@@ -267,6 +273,8 @@
     // success handlers
     this._successHandler = function(){}
     this._fulfillmentHandlers = []
+    // progress handlers
+    this._progressHandlers = []
     // error handlers
     this._errorHandlers = []
     // complete (both success and fail) handlers
@@ -301,6 +309,13 @@
         o['complete'].apply(o, arguments)
       })
     }
+
+    if (o['progress']) {
+      this._progressHandlers.push(function () {
+        o['progress'].apply(o, arguments)
+      })
+    }
+
 
     function complete (resp) {
       o['timeout'] && clearTimeout(self.timeout)
@@ -375,7 +390,24 @@
       complete(resp)
     }
 
-    this.request = getRequest.call(this, success, error)
+    function progress(evt) {
+      var percentCompleted;
+
+      if (evt.lengthComputable) {
+        percentCompleted = evt.loaded / evt.total;
+
+      } else {
+        //Length is not computable, we trigger the event with percentCompleted==0
+        percentCompleted = 0;
+      }
+
+
+      for(var i = 0; i < self._progressHandlers.length; i++) {
+        self._progressHandlers[i](evt, percentCompleted);
+      }
+    }
+
+    this.request = getRequest.call(this, success, error, progress)
   }
 
   Reqwest.prototype = {
@@ -435,6 +467,10 @@
     }
   , 'catch': function (fn) {
       return this.fail(fn)
+    }
+  , progress: function(fn) {
+      this._progressHandlers.push(fn)
+      return this;
     }
   }
 
