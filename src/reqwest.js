@@ -196,12 +196,22 @@
     var o = this.o
       , method = (o['method'] || 'GET').toUpperCase()
       , url = typeof o === 'string' ? o : o['url']
-      // convert non-string objects to query-string form unless o['processData'] is false
-      , data = (o['processData'] !== false && o['data'] && typeof o['data'] !== 'string')
-        ? reqwest.toQueryString(o['data'])
-        : (o['data'] || null)
       , http
-      , sendWait = false
+      , sendWait = false;
+
+    // convert JSON objects to JSON strings when contentType is application/json
+    // and other non-string objects to query-string form unless o['processData']
+    // is false
+    var data = null;
+    if (o['processData'] !== false && o['data']) {
+      if (o['contentType'] === 'application/json' && typeof o['data'] === 'object') {
+        data = JSON.stringify(o['data']);
+      } else if (typeof o['data'] !== 'string')) {
+        data = reqwest.toQueryString(o['data']);
+      } else {
+        data = o['data'];
+      }
+    }
 
     // if we're working on a GET request and we have data then we should append
     // query string to end of URL and not post data
