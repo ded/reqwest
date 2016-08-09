@@ -806,6 +806,7 @@
         url: '/tests/204'
           , success: function (resp) {
             ok(true, 'Nothing blew up.')
+            complete()
           }
         })
     })

@@ -326,7 +326,7 @@ reqwest.headers.common = {
   "Accept-Language" : "es"
 };
 ```
-header defaults for GET request
+Header defaults for GET request
 ```js
 reqwest.headers.get = {
   "Accept-Language" : "en"
