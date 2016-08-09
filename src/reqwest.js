@@ -104,7 +104,7 @@
 
   function setHeaders(http, o) {
     var headers = o['headers'] || {}
-      , method = (o['method'] || '').toLowerCase()
+      , method = (o['method'] || 'get').toLowerCase()
       , h
 
     headers = includeDefaultHeaders(headers, method);
