@@ -920,6 +920,34 @@
           }
       })
     })
+
+    test('commons headers', function (complete) {
+      ajax.headers.common = {
+        'Accept-Language' : 'es'
+      };
+
+      ajax({
+          url: '/tests/none.json?echo'
+        , success : function (resp) {
+          ok(headerMatch(resp, 'accept-language', 'es'), 'correct Accept-Language request header')
+          complete();
+        }
+      })
+    })
+
+    test('get headers', function (complete) {
+      ajax.headers.get = {
+        'Accept-Language' : 'pt'
+      };
+
+      ajax({
+          url: '/tests/none.json?echo'
+        , success : function (resp) {
+          ok(headerMatch(resp, 'accept-language', 'pt'), 'correct Accept-Language request header')
+          complete();
+        }
+      })
+    })
   })
 
   /***************** SERIALIZER TESTS ***********************/
