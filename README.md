@@ -1,4 +1,4 @@
-# It's AJAX
+# It's AJAX [![Build Status](https://travis-ci.org/JonattanV/reqwest.svg?branch=master)](https://travis-ci.org/JonattanV/reqwest)
 
 All over again. Includes support for xmlHttpRequest, JSONP, CORS, and CommonJS Promises A.
 
