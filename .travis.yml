@@ -3,7 +3,7 @@ node_js:
   - "0.10"
 notifications:
   email:
-    - jonattanva89@gmail.com
+    - dustin@dustindiaz.com
 before_script:
   - node make/tests.js &
 
