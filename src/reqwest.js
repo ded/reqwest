@@ -106,6 +106,8 @@
     var headers = o['headers'] || {}
       , h
 
+    headers = includeDefaultHeaders(headers, o['method'].toLowerCase());
+
     headers['Accept'] = headers['Accept']
       || defaultHeaders['accept'][o['type']]
       || defaultHeaders['accept']['*']
@@ -194,7 +196,7 @@
 
   function getRequest(fn, err) {
     var o = this.o
-      , method = (o['method'] || 'GET').toUpperCase()
+      , method = o['method'] = (o['method'] || 'GET').toUpperCase()
       , url = typeof o === 'string' ? o : o['url']
       // convert non-string objects to query-string form unless o['processData'] is false
       , data = (o['processData'] !== false && o['data'] && typeof o['data'] !== 'string')
@@ -622,6 +624,27 @@
     for (var k in options) {
       globalSetupOptions[k] = options[k]
     }
+  }
+
+  // headers that are common for all requests
+  reqwest.headers = { common : {}};
+
+  function includeDefaultHeaders(headers, method) {
+    var common;
+    var methodHeaders = reqwest.headers[method] || {};
+    for (common in reqwest.headers.common) {
+      if (!(common in headers) && !(common in methodHeaders)) {
+        headers[common] = reqwest.headers.common[common];
+      }
+    }
+
+    var option;
+    for (option in methodHeaders) {
+      if (!(option in headers)) {
+        headers[option] = methodHeaders[option];
+      }
+    }
+    return headers;
   }
 
   return reqwest
