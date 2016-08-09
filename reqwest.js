@@ -110,9 +110,10 @@
 
   function setHeaders(http, o) {
     var headers = o['headers'] || {}
+      , method = (o['method'] || 'get').toLowerCase()
       , h
 
-    headers = includeDefaultHeaders(headers, o['method'].toLowerCase());
+    headers = includeDefaultHeaders(headers, method);
 
     headers['Accept'] = headers['Accept']
       || defaultHeaders['accept'][o['type']]
