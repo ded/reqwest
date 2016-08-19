@@ -378,6 +378,12 @@
     }
 
     this.request = getRequest.call(this, success, error)
+
+    if(this.o.async === false) {
+       if (succeed(this)) success(this.request)
+       else
+          error(this.request);
+    }
   }
 
   Reqwest.prototype = {
