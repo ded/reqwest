@@ -219,7 +219,9 @@
     http.open(method, url, o['async'] === false ? false : true)
     setHeaders(http, o)
     setCredentials(http, o)
-    if (context[xDomainRequest] && http instanceof context[xDomainRequest]) {
+    var isXDomainRequest = context['XDomainRequest'] && http instanceof context['XDomainRequest'];
+    var isFake = context['FakeXMLHttpRequest'] && http instanceof context['FakeXMLHttpRequest'];
+    if (isXDomainRequest || isFake) {
         http.onload = fn
         http.onerror = err
         // NOTE: see
