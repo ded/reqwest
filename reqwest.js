@@ -12,7 +12,7 @@
 
   var context = this
 
-  if ('window' in context) {
+  if ('document' in context) {
     var doc = document
       , byTag = 'getElementsByTagName'
       , head = doc[byTag]('head')[0]
@@ -25,7 +25,6 @@
     }
   }
 
-
   var httpsRe = /^http/
     , protocolRe = /(^\w+):\/\//
     , twoHundo = /^(20\d|1223)$/ //http://stackoverflow.com/questions/10046972/msie-returns-status-code-of-1223-for-ajax-request
@@ -34,7 +33,6 @@
     , requestedWith = 'X-Requested-With'
     , uniqid = 0
     , callbackPrefix = 'reqwest_' + (+new Date())
-    , lastValue // data stored by the most recent JSONP callback
     , xmlHttpRequest = 'XMLHttpRequest'
     , xDomainRequest = 'XDomainRequest'
     , noop = function () {}
@@ -65,6 +63,11 @@
           if (xhr && 'withCredentials' in xhr) {
             return xhr
           } else if (context[xDomainRequest]) {
+            var protocolRegExp = /^https?/;
+            if (window.location.href.match(protocolRegExp)[0] !== o.url.match(protocolRegExp)[0]) {
+              throw new Error('XDomainRequest: requests must be targeted to the same scheme as the hosting page.')
+              // As per: http://blogs.msdn.com/b/ieinternals/archive/2010/05/13/xdomainrequest-restrictions-limitations-and-workarounds.aspx
+            }
             return new XDomainRequest()
           } else {
             throw new Error('Browser does not support cross-origin requests')
@@ -126,10 +129,6 @@
     }
   }
 
-  function generalCallback(data) {
-    lastValue = data
-  }
-
   function urlappend (url, s) {
     return url + (/\?/.test(url) ? '&' : '?') + s
   }
@@ -154,7 +153,9 @@
       url = urlappend(url, cbkey + '=' + cbval) // no callback details, add 'em
     }
 
-    context[cbval] = generalCallback
+    context[cbval] = function(data) {
+      script.data = data
+    }
 
     script.type = 'text/javascript'
     script.src = url
@@ -173,8 +174,7 @@
       script.onload = script.onreadystatechange = null
       script.onclick && script.onclick()
       // Call the user callback with the last value stored and clean up values and scripts.
-      fn(lastValue)
-      lastValue = undefined
+      fn(script.data)
       head.removeChild(script)
       loaded = 1
     }
@@ -187,7 +187,6 @@
       abort: function () {
         script.onload = script.onreadystatechange = null
         err({}, 'Request is aborted: timeout', {})
-        lastValue = undefined
         head.removeChild(script)
         loaded = 1
       }
