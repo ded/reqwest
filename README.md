@@ -319,5 +319,18 @@ then simply place this snippet at the top of your code:
 $.ajax.compat && $.ender({ ajax: $.ajax.compat });
 ```
 
+### Configuration headers ###
+Headers that are common for all requests.
+```js
+reqwest.headers.common = {
+  "Accept-Language" : "es"
+};
+```
+Header defaults for GET request
+```js
+reqwest.headers.get = {
+  "Accept-Language" : "en"
+};
+```
 
 **Happy Ajaxing!**
