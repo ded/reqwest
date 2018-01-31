@@ -636,18 +636,22 @@
   // headers that are common for all requests
   reqwest.headers = { common : {}};
 
+  function isEmpty(value) {
+    return (value || '').trim().length === 0
+  }
+
   function includeDefaultHeaders(headers, method) {
     var common;
     var methodHeaders = reqwest.headers[method] || {};
     for (common in reqwest.headers.common) {
-      if (!(common in headers) && !(common in methodHeaders)) {
+      if (!isEmpty(common) && !(common in headers) && !(common in methodHeaders)) {
         headers[common] = reqwest.headers.common[common];
       }
     }
 
     var option;
     for (option in methodHeaders) {
-      if (!(option in headers)) {
+      if (!isEmpty(option) && !(option in headers)) {
         headers[option] = methodHeaders[option];
       }
     }
