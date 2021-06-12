@@ -4,7 +4,7 @@
   else context[name] = definition()
 }('reqwest', this, function () {
 
-  var context = this
+  var context = this || globalThis
 
   if ('document' in context) {
     var doc = document
