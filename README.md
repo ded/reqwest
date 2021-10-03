@@ -174,7 +174,7 @@ If you are *still* requiring support for IE6/IE7, consider including [JSON3](htt
 <script>
 (function () {
   if (!window.JSON) {
-    document.write('<scr' + 'ipt src="http://cdnjs.cloudflare.com/ajax/libs/json3/3.3.2/json3.min.js"><\/scr' + 'ipt>')
+    document.write('<scr' + 'ipt src="https://cdnjs.cloudflare.com/ajax/libs/json3/3.3.2/json3.min.js"><\/scr' + 'ipt>')
   }
 }());
 </script>
@@ -207,7 +207,7 @@ make test
   * Opera
 
 ## Ender Support
-Reqwest can be used as an [Ender](http://enderjs.com) module. Add it to your existing build as such:
+Reqwest can be used as an [Ender](https://enderjs.com) module. Add it to your existing build as such:
 
     $ ender add reqwest
 
@@ -263,7 +263,7 @@ define(function(require){
 ```
 
 ## spm
-Reqwest can also be installed via spm [![](http://spmjs.io/badge/reqwest)](http://spmjs.io/package/reqwest)
+Reqwest can also be installed via spm [![](https://spmjs.io/badge/reqwest)](https://spmjs.io/package/reqwest)
 
 ```
 spm install reqwest
